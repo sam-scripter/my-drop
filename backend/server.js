@@ -1,37 +1,51 @@
 // server.js — Application entry point
 // Starts the Express server and wires up all middleware and routes
 
-require('dotenv').config(); // Load .env file into process.env first
+require('dotenv').config();
 
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ── Middleware ──────────────────────────────────────────────────────────
-// These run on every request before it reaches any route handler
-
-// helmet: adds security-related HTTP headers automatically
+// ── Security middleware ─────────────────────────────────────────────────
 app.use(helmet());
-
-// cors: allows the React web app and Flutter app to call this API
-// from a different origin without the browser blocking it
 app.use(cors({
   origin: process.env.ALLOWED_ORIGINS?.split(',') || '*'
 }));
-
-// morgan: logs every request to the console e.g. "GET /health 200 3ms"
 app.use(morgan('dev'));
-
-// Parse JSON request bodies — required for POST/PUT endpoints
 app.use(express.json());
 
+// ── Rate limiting ───────────────────────────────────────────────────────
+// Limits how many requests one IP can make — prevents abuse
+
+// Strict limit for auth endpoints — prevents brute force password attacks
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,                   // max 20 attempts per 15 min per IP
+  message: {
+    error: true,
+    message: 'Too many attempts, please try again later',
+    code: 'RATE_LIMITED'
+  }
+});
+
+// Looser limit for the public tracking endpoint
+const trackingLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 100,                  // max 100 requests per hour per IP
+  message: {
+    error: true,
+    message: 'Too many requests',
+    code: 'RATE_LIMITED'
+  }
+});
+
 // ── Health check ────────────────────────────────────────────────────────
-// Called by Nginx and UptimeRobot to confirm the API is alive
-// No authentication required — completely public
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -40,14 +54,28 @@ app.get('/health', (req, res) => {
   });
 });
 
-// ── API root — placeholder until Phase 2 routes are added ──────────────
-app.get('/api', (req, res) => {
-  res.json({ message: 'mydrop API is running' });
+// ── Routes ──────────────────────────────────────────────────────────────
+const { trackOrder } = require('./src/controllers/order.controller');
+
+app.use('/api/auth', authLimiter, require('./src/routes/auth.routes'));
+app.use('/api/business', require('./src/routes/business.routes'));
+app.use('/api/users', require('./src/routes/user.routes'));
+app.use('/api/orders', require('./src/routes/order.routes'));
+app.use('/api/analytics', require('./src/routes/analytics.routes'));
+
+// Public tracking endpoint — no JWT, rate limited separately
+app.get('/api/track/:token', trackingLimiter, trackOrder);
+
+// ── 404 handler ─────────────────────────────────────────────────────────
+app.use((req, res) => {
+  res.status(404).json({
+    error: true,
+    message: `Route ${req.method} ${req.path} not found`,
+    code: 'NOT_FOUND'
+  });
 });
 
 // ── Global error handler ────────────────────────────────────────────────
-// Any error passed to next(err) anywhere in the app lands here
-// Ensures errors always return JSON, never an HTML error page
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({
