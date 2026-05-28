@@ -1,32 +1,30 @@
-# Dockerfile — packages the mydrop API into a Docker container image
-# GitHub Actions runs this on every push to main
+# Dockerfile — builds the mydrop API into a Docker container image
+# Using node:20-slim (Debian) instead of Alpine because Prisma's query engine
+# requires OpenSSL which is not reliably available on Alpine for ARM64
 
 # ── Stage 1: Install dependencies ──────────────────────────────────────
-# Separate stage so the final image doesn't include build tools
-FROM node:20-alpine AS deps
+FROM node:20-slim AS deps
 WORKDIR /app
 
-# Copy package files first — if they haven't changed, Docker uses
-# the cached layer and skips npm install (faster builds)
+# Install OpenSSL explicitly — required by Prisma on Debian/slim images
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-# Generate Prisma client in deps stage
 COPY prisma ./prisma
 RUN npx prisma generate
 
 # ── Stage 2: Final image ────────────────────────────────────────────────
-FROM node:20-alpine AS final
+FROM node:20-slim AS final
 WORKDIR /app
 
-# Copy dependencies and generated Prisma client from Stage 1
-COPY --from=deps /app/node_modules ./node_modules
+# OpenSSL needed at runtime too, not just build time
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
-# Copy all application code
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 EXPOSE 3000
 
-# Run database migrations then start the server
-# "migrate deploy" applies any pending migrations safely in production
 CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
