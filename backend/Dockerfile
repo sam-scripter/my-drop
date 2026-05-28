@@ -9,7 +9,7 @@ WORKDIR /app
 # Copy package files first — if they haven't changed, Docker uses
 # the cached layer and skips npm install (faster builds)
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Generate Prisma client in deps stage
 COPY prisma ./prisma
