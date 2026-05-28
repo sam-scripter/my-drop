@@ -1,0 +1,25 @@
+# ── Secrets ─────────────────────────────────────────────────────────────
+# Never commit these
+.env
+firebase-service-account*.json
+
+# ── Node.js ─────────────────────────────────────────────────────────────
+node_modules/
+*.log
+npm-debug.log*
+
+# ── React build output ───────────────────────────────────────────────────
+web/dist/
+web/build/
+
+# ── Prisma ───────────────────────────────────────────────────────────────
+# Generated client is rebuilt during Docker build
+backend/node_modules/.prisma
+
+# ── OS clutter ───────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Editor ───────────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/

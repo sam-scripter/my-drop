@@ -1,0 +1,135 @@
+// schema.prisma — Database schema
+// Defines all tables and their relationships
+// After any change: run "npx prisma migrate dev --name describe_your_change"
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Businesses ──────────────────────────────────────────────────────────
+// Each SME that signs up is a Business.
+// Every other record (users, orders) belongs to a business.
+// This is how we keep one business from ever seeing another's data.
+model Business {
+  id                String   @id @default(cuid())
+  name              String
+  logo_url          String?
+  phone             String
+  email             String   @unique
+  address           String?
+  subscription_tier String   @default("free")
+  created_at        DateTime @default(now())
+
+  users  User[]
+  orders Order[]
+}
+
+// ── Users ───────────────────────────────────────────────────────────────
+// Both managers and riders are users — role determines access level
+model User {
+  id            String   @id @default(cuid())
+  business_id   String
+  name          String
+  phone         String
+  email         String   @unique
+  password_hash String
+  role          Role     @default(RIDER)
+  fcm_token     String?  // Firebase push notification token, updated on each login
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now())
+
+  business   Business   @relation(fields: [business_id], references: [id])
+  deliveries Delivery[]
+
+  @@index([business_id])
+  @@index([email])
+}
+
+enum Role {
+  MANAGER
+  RIDER
+}
+
+// ── Orders ──────────────────────────────────────────────────────────────
+// Core record — one per delivery request
+model Order {
+  id                String      @id @default(cuid())
+  business_id       String
+  customer_name     String
+  customer_phone    String
+  customer_address  String
+  items_description String?
+  status            OrderStatus @default(PENDING)
+
+  // tracking_token is the short code in the public URL e.g. /track/xK9mP2
+  // nanoid(8) generates this — short, random, unguessable
+  tracking_token String @unique
+  tracking_url   String // full URL sent to the customer via WhatsApp/SMS
+
+  notes      String?
+  source     String  @default("manual") // manual | whatsapp | api | pos
+  source_ref String? // external message ID or webhook reference, nullable
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  business Business  @relation(fields: [business_id], references: [id])
+  delivery Delivery?
+
+  @@index([business_id])
+  @@index([status])
+  @@index([tracking_token]) // queried on every public tracking page load
+  @@index([created_at])
+}
+
+// Standardised status enum — used consistently across API, Flutter, and React
+enum OrderStatus {
+  PENDING    // created, no rider assigned yet
+  ASSIGNED   // rider assigned, not collected yet
+  PICKED_UP  // rider collected from business
+  IN_TRANSIT // rider on the way to customer
+  DELIVERED  // delivered, PIN confirmed
+  FAILED     // delivery attempt failed
+}
+
+// ── Deliveries ──────────────────────────────────────────────────────────
+// Links an order to a rider, records timing and confirmation
+model Delivery {
+  id            String    @id @default(cuid())
+  order_id      String    @unique
+  rider_id      String
+  assigned_at   DateTime  @default(now())
+  picked_up_at  DateTime?
+  delivered_at  DateTime?
+  delivery_pin  String    // 4-digit PIN shown to customer, confirmed by rider
+  pod_photo_url String?   // proof of delivery photo, optional
+  rating        Int?      // 1–5 stars from customer after delivery
+  rating_note   String?
+  created_at    DateTime  @default(now())
+
+  order              Order              @relation(fields: [order_id], references: [id])
+  rider              User               @relation(fields: [rider_id], references: [id])
+  location_snapshots LocationSnapshot[]
+
+  @@index([rider_id])
+}
+
+// ── LocationSnapshots ───────────────────────────────────────────────────
+// Permanent GPS history for analytics and dispute resolution
+// Live location goes to Firestore — this is the archive copy
+model LocationSnapshot {
+  id          String   @id @default(cuid())
+  delivery_id String
+  lat         Float
+  lng         Float
+  recorded_at DateTime @default(now())
+
+  delivery Delivery @relation(fields: [delivery_id], references: [id])
+
+  @@index([delivery_id])
+}
