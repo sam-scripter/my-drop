@@ -454,8 +454,8 @@ async function trackOrder(req, res, next) {
       delivery_pin: deliveryPin,
       // The Firestore document path the tracking page listens to for live location
       firestore_path: order.delivery
-        ? `deliveries/${order.id}/location`
-        : null,
+      ? `deliveries/${order.id}/location/current`
+      : null,
       timestamps: {
         created_at: order.created_at,
         picked_up_at: order.delivery?.picked_up_at,
