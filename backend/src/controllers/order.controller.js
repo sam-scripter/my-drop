@@ -252,7 +252,17 @@ async function assignRider(req, res, next) {
       return { order: updatedOrder, delivery };
     });
 
-    // TODO Phase 6: send FCM push notification to rider.fcm_token
+    // Send FCM push notification to rider
+    const { sendPushNotification } = require('../services/firebase.service');
+    await sendPushNotification(
+      rider.fcm_token,
+      'New delivery assigned',
+      `${order.customer_name} — ${order.customer_address}`,
+      {
+        orderId: order.id,
+        type: 'ORDER_ASSIGNED',
+      }
+    );
 
     res.json({
       message: 'Rider assigned successfully',
