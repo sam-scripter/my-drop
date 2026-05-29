@@ -56,7 +56,7 @@ async function getToday(req, res, next) {
         SELECT
           EXTRACT(HOUR FROM created_at) AS hour,
           COUNT(*) AS count
-        FROM orders
+        FROM "Order"
         WHERE business_id = ${businessId}
           AND created_at >= ${startOfDay}
         GROUP BY hour
@@ -69,8 +69,8 @@ async function getToday(req, res, next) {
           AVG(
             EXTRACT(EPOCH FROM (d.delivered_at - d.assigned_at)) / 60
           ) AS avg_minutes
-        FROM deliveries d
-        JOIN orders o ON o.id = d.order_id
+        FROM "Delivery" d
+        JOIN "Order" o ON o.id = d.order_id
         WHERE o.business_id = ${businessId}
           AND d.delivered_at IS NOT NULL
           AND d.assigned_at >= ${startOfDay}
