@@ -20,6 +20,23 @@ app.use(cors({
 app.use(morgan('dev'));
 app.use(express.json());
 
+// Allow all origins for the public tracking endpoint
+// For all other routes, restrict to known origins
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/track/')) {
+    // Public tracking endpoint — allow any origin
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+  } else {
+    // All other routes — restrict to known origins
+    cors({
+      origin: process.env.ALLOWED_ORIGINS?.split(',') || '*'
+    })(req, res, next);
+  }
+});
+
 // ── Rate limiting ───────────────────────────────────────────────────────
 // Limits how many requests one IP can make — prevents abuse
 
