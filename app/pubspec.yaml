@@ -1,0 +1,61 @@
+name: mydrop_app
+description: mydrop — Real-time delivery tracking for riders and managers
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # ── State management ──────────────────────────────────────────────
+  # Riverpod: manages app state (who is logged in, current orders, etc)
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # ── HTTP client ───────────────────────────────────────────────────
+  # Dio: makes API calls to our Node.js backend
+  dio: ^5.4.3
+
+  # ── Secure storage ────────────────────────────────────────────────
+  # Stores the JWT token securely on the device (not in plain text)
+  flutter_secure_storage: ^9.0.0
+
+  # ── Maps & Location ───────────────────────────────────────────────
+  # Google Maps widget
+  google_maps_flutter: ^2.6.1
+  # Gets the device's GPS position
+  geolocator: ^12.0.0
+
+  # ── Firebase ──────────────────────────────────────────────────────
+  # Core Firebase setup — required by all Firebase packages
+  firebase_core: ^3.15.2
+  # Firestore — real-time database for live location streaming
+  cloud_firestore: ^5.2.1
+  # FCM — push notifications to riders
+  firebase_messaging: ^15.1.0
+
+  # ── Offline support ───────────────────────────────────────────────
+  # Detects when the device goes offline
+  connectivity_plus: ^6.0.3
+  # Local SQLite database for queuing GPS updates while offline
+  sqflite: ^2.3.3+1
+
+  # ── Utilities ─────────────────────────────────────────────────────
+  # Date formatting
+  intl: ^0.19.0
+  # App icon
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  # Code generator for Riverpod
+  build_runner: ^2.4.9
+  riverpod_generator: ^2.4.3
+
+flutter:
+  uses-material-design: true

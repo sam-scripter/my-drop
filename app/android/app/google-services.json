@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "870263630759",
+    "project_id": "mydrop-d21c0",
+    "storage_bucket": "mydrop-d21c0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:870263630759:android:4ca8cd917adef6d600e482",
+        "android_client_info": {
+          "package_name": "com.example.mydrop_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "870263630759-2gtsbdhbl1d4c9bu7kf9h2j6fdjeao7n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCK_0Ax_ahuxCpRiXRn5nQ7MLdFfEoBMtc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "870263630759-2gtsbdhbl1d4c9bu7kf9h2j6fdjeao7n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
