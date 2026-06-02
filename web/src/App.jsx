@@ -1,7 +1,15 @@
 // App.jsx — Route definitions
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import TrackingPage from './pages/TrackingPage'
 import NotFound from './pages/NotFound'
+import LoginPage from './pages/LoginPage'
+import SignupPage from './pages/SignupPage'
+import DashboardPage from './pages/DashboardPage'
+import OrdersPage from './pages/OrdersPage'
+import CreateOrderPage from './pages/CreateOrderPage'
+import RidersPage from './pages/RidersPage'
+import ProtectedRoute from './components/ProtectedRoute'
+import { isLoggedIn } from './auth'
 
 export default function App() {
   return (
@@ -9,8 +17,36 @@ export default function App() {
       {/* Public tracking page — the URL customers receive */}
       <Route path="/track/:token" element={<TrackingPage />} />
 
+      {/* Manager login/signup */}
+      <Route path="/signup" element={<SignupPage />} />
+      <Route
+        path="/login"
+        element={isLoggedIn()
+          ? <Navigate to="/dashboard" replace />
+          : <LoginPage />}
+      />
+
+      {/* Protected dashboard routes */}
+      <Route path="/dashboard" element={
+        <ProtectedRoute><DashboardPage /></ProtectedRoute>
+      } />
+      <Route path="/orders" element={
+        <ProtectedRoute><OrdersPage /></ProtectedRoute>
+      } />
+      <Route path="/orders/new" element={
+        <ProtectedRoute><CreateOrderPage /></ProtectedRoute>
+      } />
+      <Route path="/riders" element={
+        <ProtectedRoute><RidersPage /></ProtectedRoute>
+      } />
+
       {/* Landing page — shown at root URL */}
-      <Route path="/" element={<LandingPage />} />
+      {/* Root redirect */}
+      <Route path="/" element={
+        isLoggedIn()
+          ? <Navigate to="/dashboard" replace />
+          : <Navigate to="/login" replace />
+      } />
 
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
