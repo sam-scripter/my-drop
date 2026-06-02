@@ -53,7 +53,20 @@ async function createOrder(req, res, next) {
       }
     });
 
-    // TODO Phase 6: send WhatsApp/SMS to customer_phone with tracking_url
+    // Send SMS notification to customer
+    try {
+      const { sendOrderNotification } = require('../services/notification.service');
+      await sendOrderNotification({
+        customerPhone: customer_phone,
+        customerName: customer_name,
+        businessName: order.business.name,
+        trackingUrl: tracking_url,
+        trigger: 'created',
+      });
+    } catch (smsErr) {
+      // SMS failure never breaks order creation
+      console.error('Order creation SMS failed:', smsErr.message);
+    }
 
     res.status(201).json({
       message: 'Order created successfully',
@@ -251,6 +264,24 @@ async function assignRider(req, res, next) {
 
       return { order: updatedOrder, delivery };
     });
+
+    // Send SMS to customer notifying rider is on the way
+    try {
+      const { sendOrderNotification } = require('../services/notification.service');
+      const fullOrder = await prisma.order.findUnique({
+        where: { id: order.id },
+        include: { business: { select: { name: true } } }
+      });
+      await sendOrderNotification({
+        customerPhone: fullOrder.customer_phone,
+        customerName: fullOrder.customer_name,
+        businessName: fullOrder.business.name,
+        trackingUrl: fullOrder.tracking_url,
+        trigger: 'assigned',
+      });
+    } catch (smsErr) {
+      console.error('Assignment SMS failed:', smsErr.message);
+    }
 
     // Send FCM push notification to rider
     const { sendPushNotification } = require('../services/firebase.service');
