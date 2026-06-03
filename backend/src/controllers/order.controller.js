@@ -447,7 +447,7 @@ async function trackOrder(req, res, next) {
       where: { tracking_token: req.params.token },
       include: {
         business: {
-          select: { name: true, logo_url: true }
+          select: { name: true, logo_url: true, business_type: true,  }
         },
         delivery: {
           select: {
@@ -477,16 +477,26 @@ async function trackOrder(req, res, next) {
       ? order.delivery?.delivery_pin
       : null;
 
+    // Get status labels based on business type
+    const statusLabels = getStatusLabels(order.business.business_type || 'OTHER');
+
     res.json({
-      business: order.business,
+      business: {
+        name: order.business.name,
+        logo_url: order.business.logo_url,
+        business_type: order.business.business_type,
+      },
       customer_name: order.customer_name,
+      customer_address: order.customer_address,
       status: order.status,
+      status_label: statusLabels[order.status],    // human-readable label
+      status_icon: getStatusIcon(order.status),    // icon identifier
+      status_labels: statusLabels,                 // all labels for the stepper
       tracking_token: order.tracking_token,
       delivery_pin: deliveryPin,
-      // The Firestore document path the tracking page listens to for live location
       firestore_path: order.delivery
-      ? `deliveries/${order.id}/location/current`
-      : null,
+        ? `deliveries/${order.id}/location/current`
+        : null,
       timestamps: {
         created_at: order.created_at,
         picked_up_at: order.delivery?.picked_up_at,

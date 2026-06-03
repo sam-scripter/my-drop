@@ -15,6 +15,15 @@ datasource db {
 // Each SME that signs up is a Business.
 // Every other record (users, orders) belongs to a business.
 // This is how we keep one business from ever seeing another's data.
+
+enum BusinessType {
+  FOOD
+  RETAIL
+  PHARMACY
+  COURIER
+  OTHER
+}
+
 model Business {
   id                String   @id @default(cuid())
   name              String

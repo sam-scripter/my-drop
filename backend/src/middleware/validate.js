@@ -48,13 +48,14 @@ const { z: zod } = require('zod');
 
 const schemas = {
   // POST /api/auth/register
-  register: zod.object({
-    businessName: zod.string().min(2, 'Business name must be at least 2 characters'),
-    businessPhone: zod.string().min(10, 'Enter a valid phone number'),
-    businessEmail: zod.string().email('Enter a valid email address'),
-    managerName: zod.string().min(2, 'Name must be at least 2 characters'),
-    password: zod.string().min(8, 'Password must be at least 8 characters'),
-  }),
+ register: zod.object({
+  businessName: zod.string().min(2, 'Business name must be at least 2 characters'),
+  businessPhone: zod.string().min(10, 'Enter a valid phone number'),
+  businessEmail: zod.string().email('Enter a valid email address'),
+  managerName: zod.string().min(2, 'Name must be at least 2 characters'),
+  password: zod.string().min(8, 'Password must be at least 8 characters'),
+  businessType: zod.enum(['FOOD', 'RETAIL', 'PHARMACY', 'COURIER', 'OTHER']).default('OTHER'),
+}),
 
   // POST /api/auth/login
   login: zod.object({

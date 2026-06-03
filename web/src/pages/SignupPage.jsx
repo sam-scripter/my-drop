@@ -15,6 +15,7 @@ export default function SignupPage() {
     managerName: '',
     password: '',
     confirmPassword: '',
+    businessType: 'OTHER', 
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -40,6 +41,7 @@ export default function SignupPage() {
         businessEmail: form.businessEmail,
         managerName: form.managerName,
         password: form.password,
+        businessType: form.businessType, 
       })
 
       const { token, user, business } = response.data
@@ -103,6 +105,26 @@ export default function SignupPage() {
                 required
               />
             </div>
+          </div>
+          {/* Business type selector */}
+          <div style={styles.field}>
+            <label style={styles.label}>Type of business *</label>
+            <select
+              name="businessType"
+              value={form.businessType}
+              onChange={handleChange}
+              style={styles.input}
+              required
+            >
+              <option value="FOOD">Food & Restaurant</option>
+              <option value="RETAIL">Retail & Clothing</option>
+              <option value="PHARMACY">Pharmacy & Healthcare</option>
+              <option value="COURIER">Courier & Logistics</option>
+              <option value="OTHER">Other</option>
+            </select>
+            <p style={styles.fieldHint}>
+              This helps us use the right language for your customers
+            </p>
           </div>
 
           <div style={styles.section}>Your account</div>
@@ -255,5 +277,10 @@ const styles = {
     marginTop: 24,
     fontSize: 14,
     color: '#5F6368',
+  },
+  fieldHint: {
+    fontSize: 12,
+    color: '#5F6368',
+    marginTop: 4,
   },
 }

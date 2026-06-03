@@ -147,7 +147,10 @@ export default function TrackingPage() {
       </div>
 
       {/* ── Status bar ─────────────────────────────────────────── */}
-      <StatusBar status={status} />
+      <StatusBar
+        status={status}
+        statusLabels={orderData.status_labels || {}}
+      />
 
       <div style={{ height: 16 }} />
 

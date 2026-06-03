@@ -1,76 +1,88 @@
 // StatusBar.jsx — Order status progress bar
 //
 // Shows the customer where their order is in the delivery process.
-// Each step lights up as the order progresses.
+// Step labels are dynamic based on the business type — a pharmacy
+// shows "Dispensing" while a restaurant shows "Preparing".
+// The parent component passes statusLabels from the API response.
 
-const STEPS = [
-  { status: 'PENDING',    label: 'Order Received', icon: '📋' },
-  { status: 'ASSIGNED',   label: 'Preparing',      icon: '👨‍🍳' },
-  { status: 'PICKED_UP',  label: 'Picked Up',      icon: '🏃' },
-  { status: 'IN_TRANSIT', label: 'On the Way',     icon: '🚴' },
-  { status: 'DELIVERED',  label: 'Delivered',      icon: '✅' },
+// Maps each status to its position in the stepper
+const STATUS_ORDER = [
+  'PENDING',
+  'ASSIGNED',
+  'PICKED_UP',
+  'IN_TRANSIT',
+  'DELIVERED',
 ]
 
-// Maps each status to its step index
-const STATUS_INDEX = {
-  PENDING: 0,
-  ASSIGNED: 1,
-  PICKED_UP: 2,
-  IN_TRANSIT: 3,
-  DELIVERED: 4,
-  FAILED: -1,
+// Neutral SVG icons for each status — no emojis, works for any business type
+const STATUS_ICONS = {
+  PENDING: '📋',
+  ASSIGNED: '⏳',
+  PICKED_UP: '✓',
+  IN_TRANSIT: '🚴',
+  DELIVERED: '✅',
 }
 
-export default function StatusBar({ status }) {
-  const currentIndex = STATUS_INDEX[status] ?? 0
+/**
+ * @param {string} status - current OrderStatus enum value
+ * @param {object} statusLabels - map of status to display label from API
+ *   e.g. { PENDING: 'Order Received', ASSIGNED: 'Dispensing', ... }
+ */
+export default function StatusBar({ status, statusLabels = {} }) {
+  const currentIndex = STATUS_ORDER.indexOf(status)
 
   if (status === 'FAILED') {
     return (
       <div style={styles.failedContainer}>
         <span style={{ fontSize: 24 }}>❌</span>
-        <p style={styles.failedText}>Delivery could not be completed</p>
+        <p style={styles.failedText}>
+          {statusLabels.FAILED || 'Could not complete delivery'}
+        </p>
       </div>
     )
   }
 
   return (
     <div style={styles.container}>
-      {STEPS.map((step, index) => {
+      {STATUS_ORDER.map((stepStatus, index) => {
         const isCompleted = index < currentIndex
         const isActive = index === currentIndex
         const isPending = index > currentIndex
 
+        // Get the label from the API or fall back to the status name
+        const label = statusLabels[stepStatus] || stepStatus.replace('_', ' ')
+
         return (
-          <div key={step.status} style={styles.stepWrapper}>
-            {/* Step circle */}
+          <div key={stepStatus} style={styles.stepWrapper}>
+            {/* Circle with icon */}
             <div style={{
               ...styles.circle,
-              background: isCompleted || isActive ? '#1A73E8' : '#E8EAED',
+              background: isCompleted || isActive ? '#F97316' : '#E8EAED',
               transform: isActive ? 'scale(1.2)' : 'scale(1)',
               transition: 'all 0.3s ease',
             }}>
               <span style={{
-                fontSize: isActive ? 16 : 14,
-                filter: isPending ? 'grayscale(1) opacity(0.5)' : 'none',
+                fontSize: isActive ? 14 : 12,
+                opacity: isPending ? 0.4 : 1,
               }}>
-                {step.icon}
+                {STATUS_ICONS[stepStatus]}
               </span>
             </div>
 
-            {/* Step label */}
+            {/* Step label — dynamic from API */}
             <p style={{
               ...styles.label,
-              color: isActive ? '#1A73E8' : isCompleted ? '#34A853' : '#9AA0A6',
+              color: isActive ? '#F97316' : isCompleted ? '#22C55E' : '#9AA0A6',
               fontWeight: isActive ? '600' : '400',
             }}>
-              {step.label}
+              {label}
             </p>
 
-            {/* Connector line between steps */}
-            {index < STEPS.length - 1 && (
+            {/* Connector line */}
+            {index < STATUS_ORDER.length - 1 && (
               <div style={{
                 ...styles.connector,
-                background: index < currentIndex ? '#1A73E8' : '#E8EAED',
+                background: index < currentIndex ? '#F97316' : '#E8EAED',
               }} />
             )}
           </div>
@@ -133,7 +145,7 @@ const styles = {
     margin: '0 16px',
   },
   failedText: {
-    color: '#EA4335',
+    color: '#EF4444',
     marginTop: 8,
     fontWeight: '500',
   },

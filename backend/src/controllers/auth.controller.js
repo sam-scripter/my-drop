@@ -16,12 +16,13 @@ const { signToken } = require('../utils/jwt');
 async function register(req, res, next) {
   try {
     const {
-      businessName,
-      businessPhone,
-      businessEmail,
-      managerName,
-      password,
-    } = req.body;
+    businessName,
+    businessPhone,
+    businessEmail,
+    managerName,
+    password,
+    businessType,
+  } = req.body;
 
     // Check if a business with this email already exists
     const existing = await prisma.business.findUnique({
@@ -48,6 +49,7 @@ async function register(req, res, next) {
           name: businessName,
           phone: businessPhone,
           email: businessEmail,
+          business_type: businessType || 'OTHER',
         }
       });
 
