@@ -12,6 +12,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import { isLoggedIn } from './auth'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import PricingPage from './pages/PricingPage'
 
 export default function App() {
   return (
@@ -54,6 +55,9 @@ export default function App() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
+      {/* Public pricing page */}
+      <Route path="/pricing" element={<PricingPage />} />
+      
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
