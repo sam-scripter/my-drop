@@ -11,11 +11,17 @@ const {
 } = require('../controllers/order.controller');
 const { authenticateJWT, requireRole } = require('../middleware/auth');
 const { validate, schemas } = require('../middleware/validate');
+const { checkOrderLimit } = require('../middleware/subscription'); 
 
 router.use(authenticateJWT);
 
-// POST /api/orders
-router.post('/', requireRole('MANAGER'), validate(schemas.createOrder), createOrder);
+// POST /api/orders — check order limit before creating
+router.post('/',
+  requireRole('MANAGER'),
+  checkOrderLimit,              // ← add
+  validate(schemas.createOrder),
+  createOrder
+);
 
 // GET /api/orders
 router.get('/', getOrders);

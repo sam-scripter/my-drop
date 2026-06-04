@@ -51,6 +51,12 @@ async function register(req, res, next) {
           phone: businessPhone,
           email: businessEmail,
           business_type: businessType || 'OTHER',
+
+          // Start a 14-day free trial on registration
+          // Trial gets STARTER limits (200 orders, 5 riders)
+          subscription_tier: 'FREE',
+          subscription_status: 'TRIAL',
+          trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
         }
       });
 

@@ -10,11 +10,12 @@ const {
 } = require('../controllers/user.controller');
 const { authenticateJWT, requireRole } = require('../middleware/auth');
 const { validate, schemas } = require('../middleware/validate');
+const { checkRiderLimit } = require('../middleware/subscription');
 
 router.use(authenticateJWT);
 
 // POST /api/users/rider — managers only
-router.post('/rider', requireRole('MANAGER'), validate(schemas.createRider), createRider);
+router.post('/rider', requireRole('MANAGER'), checkRiderLimit, validate(schemas.createRider), createRider);
 
 // GET /api/users/riders — managers only
 router.get('/riders', requireRole('MANAGER'), getRiders);

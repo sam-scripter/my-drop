@@ -53,6 +53,16 @@ async function createOrder(req, res, next) {
       }
     });
 
+    // Increment the business's monthly order count
+    // This runs outside the main create so a counter failure
+    // doesn't roll back the order creation
+    await prisma.business.update({
+      where: { id: req.user.businessId },
+      data: { monthly_order_count: { increment: 1 } }
+    }).catch(err => {
+      console.error('Failed to increment order count:', err.message);
+    });
+    
     // Send SMS notification to customer
     try {
       const { sendOrderNotification } = require('../services/notification.service');

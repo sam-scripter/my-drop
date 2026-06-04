@@ -24,19 +24,43 @@ enum BusinessType {
   OTHER
 }
 
-model Business {
-  id                String       @id @default(cuid())
-  name              String
-  logo_url          String?
-  phone             String
-  email             String       @unique
-  address           String?
-  business_type     BusinessType @default(OTHER)
-  subscription_tier String       @default("free")
-  created_at        DateTime     @default(now())
+enum SubscriptionTier {
+  FREE
+  STARTER
+  GROWTH
+  SCALE
+}
 
-  users  User[]
-  orders Order[]
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+model Business {
+  id                   String             @id @default(cuid())
+  name                 String
+  logo_url             String?
+  phone                String
+  email                String             @unique
+  address              String?
+  business_type        BusinessType       @default(OTHER)
+
+  // ── Subscription ──────────────────────────────────────────────────
+  // Tracks the business's current plan, status, and usage.
+  // monthly_order_count resets to 0 on the 1st of every month via cron.
+  subscription_tier    SubscriptionTier   @default(FREE)
+  subscription_status  SubscriptionStatus @default(TRIAL)
+  trial_ends_at        DateTime?          // null = trial not started
+  subscription_ends_at DateTime?          // null = no active subscription
+  monthly_order_count  Int                @default(0)
+
+  created_at           DateTime           @default(now())
+
+  users                User[]
+  orders               Order[]
+  subscription_payments SubscriptionPayment[]
 }
 
 // ── Users ───────────────────────────────────────────────────────────────
@@ -163,4 +187,26 @@ model PasswordResetToken {
 
   @@index([token])
   @@index([user_id])
+}
+
+// ── SubscriptionPayment ─────────────────────────────────────────────────
+// Records every payment made by a business.
+// Initially recorded manually by the mydrop admin when M-Pesa payment
+// is confirmed. Later can be automated via Daraja API.
+model SubscriptionPayment {
+  id              String   @id @default(cuid())
+  business_id     String
+  amount          Float    // amount paid in KES
+  tier            SubscriptionTier
+  period_start    DateTime // subscription start date
+  period_end      DateTime // subscription end date
+  payment_method  String   @default("mpesa") // mpesa | bank | card
+  mpesa_reference String?  // M-Pesa transaction code e.g. QJK1234XYZ
+  status          String   @default("confirmed") // pending | confirmed | failed
+  notes           String?  // any additional notes from admin
+  created_at      DateTime @default(now())
+
+  business Business @relation(fields: [business_id], references: [id])
+
+  @@index([business_id])
 }
