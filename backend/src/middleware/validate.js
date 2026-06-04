@@ -102,6 +102,8 @@ const schemas = {
     customer_address: zod.string().min(5, 'Delivery address is required'),
     items_description: zod.string().optional(),
     notes: zod.string().optional(),
+    delivery_lat: zod.number().optional().nullable(),   // ← add
+    delivery_lng: zod.number().optional().nullable(), 
     source: zod.enum(['manual', 'whatsapp', 'api', 'pos']).default('manual'),
     source_ref: zod.string().optional(),
   }),

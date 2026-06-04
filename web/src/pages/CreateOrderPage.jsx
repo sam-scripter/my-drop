@@ -10,6 +10,7 @@ import api from '../api'
 import {
   colors, shadows, radius, typography, spacing
 } from '../theme'
+import LocationPicker from '../components/LocationPicker'
 
 export default function CreateOrderPage() {
   const navigate = useNavigate()
@@ -24,6 +25,7 @@ export default function CreateOrderPage() {
   const [error, setError] = useState('')
   const [createdOrder, setCreatedOrder] = useState(null)
   const [copied, setCopied] = useState(false)
+  const [addressLatLng, setAddressLatLng] = useState(null)
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -35,7 +37,11 @@ export default function CreateOrderPage() {
     setError('')
 
     try {
-      const res = await api.post('/orders', form)
+      const res = await api.post('/orders', {
+        ...form,
+        delivery_lat: addressLatLng?.lat || null,
+        delivery_lng: addressLatLng?.lng || null,
+      })
       setCreatedOrder(res.data.order)
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create order')
@@ -142,11 +148,12 @@ export default function CreateOrderPage() {
 
             <div style={styles.field}>
               <label style={styles.label}>Delivery address *</label>
-              <input
-                name="customer_address"
+              <LocationPicker
                 value={form.customer_address}
-                onChange={handleChange}
-                style={styles.input}
+                onChange={(address, latLng) => {
+                  setForm({ ...form, customer_address: address })
+                  if (latLng) setAddressLatLng(latLng)
+                }}
                 placeholder="e.g. Kilimani, Nairobi"
                 required
               />

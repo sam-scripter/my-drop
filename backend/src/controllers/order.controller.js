@@ -16,6 +16,8 @@ async function createOrder(req, res, next) {
       customer_address,
       items_description,
       notes,
+      delivery_lat,
+      delivery_lng,
       source,
       source_ref,
     } = req.body;
@@ -40,6 +42,8 @@ async function createOrder(req, res, next) {
         customer_address,
         items_description,
         notes,
+        delivery_lat: delivery_lat || null,
+        delivery_lng: delivery_lng || null,
         source: source || 'manual',
         source_ref,
         tracking_token,
@@ -62,7 +66,7 @@ async function createOrder(req, res, next) {
     }).catch(err => {
       console.error('Failed to increment order count:', err.message);
     });
-    
+
     // Send SMS notification to customer
     try {
       const { sendOrderNotification } = require('../services/notification.service');

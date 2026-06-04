@@ -117,6 +117,11 @@ model Order {
   business Business  @relation(fields: [business_id], references: [id])
   delivery Delivery?
 
+  // Delivery coordinates — set when manager uses the location picker
+  // Null if manager typed address manually without selecting from autocomplete
+  delivery_lat  Float?
+  delivery_lng  Float?
+  
   @@index([business_id])
   @@index([status])
   @@index([tracking_token]) // queried on every public tracking page load
