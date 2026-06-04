@@ -6,7 +6,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { saveAuth } from '../auth'
+import { setAuth as saveAuth } from '../auth'
 import { colors, shadows, radius, typography, spacing } from '../theme'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL

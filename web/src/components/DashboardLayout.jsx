@@ -13,7 +13,7 @@
 import { useState, useEffect } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { colors, shadows, typography, spacing } from '../theme'
-import { getAuth, clearAuth, getBusiness, getUser } from '../auth'
+import { clearAuth, getBusiness, getUser } from '../auth'
 import api from '../api'
 
 const NAV_ITEMS = [
