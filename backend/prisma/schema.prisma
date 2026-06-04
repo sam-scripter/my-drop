@@ -25,14 +25,15 @@ enum BusinessType {
 }
 
 model Business {
-  id                String   @id @default(cuid())
+  id                String       @id @default(cuid())
   name              String
   logo_url          String?
   phone             String
-  email             String   @unique
+  email             String       @unique
   address           String?
-  subscription_tier String   @default("free")
-  created_at        DateTime @default(now())
+  business_type     BusinessType @default(OTHER)
+  subscription_tier String       @default("free")
+  created_at        DateTime     @default(now())
 
   users  User[]
   orders Order[]
