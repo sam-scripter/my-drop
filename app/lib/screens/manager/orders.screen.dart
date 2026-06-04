@@ -291,13 +291,13 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.link, size: 14, color: Color(0xFF1A73E8)),
+                const Icon(Icons.link, size: 14, color: Color(0xFFF97316)),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     order['tracking_url'],
                     style: const TextStyle(
-                      color: Color(0xFF1A73E8),
+                      color: Color(0xFFF97316),
                       fontSize: 12,
                     ),
                     maxLines: 1,
@@ -352,7 +352,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
       case 'PICKED_UP':
         return Colors.orange;
       case 'IN_TRANSIT':
-        return const Color(0xFF1A73E8);
+        return const Color(0xFFF97316);
       case 'DELIVERED':
         return const Color(0xFF34A853);
       case 'FAILED':

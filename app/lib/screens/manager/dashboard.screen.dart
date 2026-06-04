@@ -108,7 +108,7 @@ class _ManagerDashboardScreenState
                               label: 'Orders',
                               value: '${_analytics!['orders_created'] ?? 0}',
                               icon: Icons.receipt_long,
-                              color: const Color(0xFF1A73E8),
+                              color: const Color(0xFFF97316),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -297,7 +297,7 @@ class _ActionButton extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              Icon(icon, color: const Color(0xFF1A73E8)),
+              Icon(icon, color: const Color(0xFFF97316)),
               const SizedBox(width: 8),
               Text(
                 label,
@@ -365,7 +365,7 @@ class _OrderTile extends StatelessWidget {
       case 'PICKED_UP':
         return Colors.orange;
       case 'IN_TRANSIT':
-        return const Color(0xFF1A73E8);
+        return const Color(0xFFF97316);
       case 'DELIVERED':
         return const Color(0xFF34A853);
       case 'FAILED':

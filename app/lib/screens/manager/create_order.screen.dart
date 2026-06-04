@@ -237,7 +237,7 @@ class _SuccessView extends StatelessWidget {
                 Text(
                   order['tracking_url'],
                   style: const TextStyle(
-                    color: Color(0xFF1A73E8),
+                    color: Color(0xFFF97316),
                     fontSize: 13,
                   ),
                 ),

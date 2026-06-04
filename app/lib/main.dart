@@ -34,7 +34,7 @@ class MyDropApp extends StatelessWidget {
     return MaterialApp(
       title: 'mydrop',
       debugShowCheckedModeBanner: false, // removes the red DEBUG banner
-      theme: AppTheme.lightTheme,
+      theme: AppTheme.light,
       onGenerateRoute: AppRouter.generateRoute,
       initialRoute: '/',
     );

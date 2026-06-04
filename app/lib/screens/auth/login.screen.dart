@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mydrop_app/core/theme.dart';
 import '../../providers/auth.provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -89,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1A73E8),
+                          color: AppTheme.primary,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Icon(
@@ -104,7 +105,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A73E8),
+                          color: Color(0xFFF97316),
                         ),
                       ),
                       const Text(

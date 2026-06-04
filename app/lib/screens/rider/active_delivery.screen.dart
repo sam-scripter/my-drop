@@ -441,7 +441,7 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen> {
             icon: const Icon(Icons.directions_bike),
             label: const Text('Start Delivery'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1A73E8),
+              backgroundColor: const Color(0xFFF97316),
               minimumSize: const Size(double.infinity, 52),
             ),
           ),
@@ -513,7 +513,7 @@ class _StatusBadge extends StatelessWidget {
         color = Colors.orange;
         break;
       case 'IN_TRANSIT':
-        color = const Color(0xFF1A73E8);
+        color = const Color(0xFFF97316);
         break;
       default:
         color = Colors.grey;

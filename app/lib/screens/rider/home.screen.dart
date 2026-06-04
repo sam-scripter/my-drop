@@ -274,7 +274,7 @@ class _ActiveDeliveryCard extends ConsumerWidget {
                   Text(
                     'Tap to open delivery',
                     style: TextStyle(
-                      color: const Color(0xFF1A73E8).withOpacity(0.7),
+                      color: const Color(0xFFF97316).withOpacity(0.7),
                       fontSize: 12,
                     ),
                   ),
@@ -282,7 +282,7 @@ class _ActiveDeliveryCard extends ConsumerWidget {
                   const Icon(
                     Icons.arrow_forward_ios,
                     size: 10,
-                    color: Color(0xFF1A73E8),
+                    color: Color(0xFFF97316),
                   ),
                 ],
               ),
@@ -300,7 +300,7 @@ class _ActiveDeliveryCard extends ConsumerWidget {
       case 'PICKED_UP':
         return Colors.orange;
       case 'IN_TRANSIT':
-        return const Color(0xFF1A73E8);
+        return const Color(0xFFF97316);
       default:
         return Colors.grey;
     }
