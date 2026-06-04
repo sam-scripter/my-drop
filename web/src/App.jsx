@@ -13,6 +13,7 @@ import { isLoggedIn } from './auth'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import PricingPage from './pages/PricingPage'
+import LandingPage from './pages/LandingPage'
 
 export default function App() {
   return (
@@ -43,21 +44,18 @@ export default function App() {
         <ProtectedRoute><RidersPage /></ProtectedRoute>
       } />
 
-      {/* Landing page — shown at root URL */}
-      {/* Root redirect */}
-      <Route path="/" element={
-        isLoggedIn()
-          ? <Navigate to="/dashboard" replace />
-          : <Navigate to="/login" replace />
-      } />
-
+      {/* Root — show landing page, redirect to dashboard if logged in */}
+      <Route
+        path="/"
+        element={isLoggedIn() ? <Navigate to="/dashboard" replace /> : <LandingPage />}
+      />
       {/* Password reset routes — public, no auth needed */}
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       {/* Public pricing page */}
       <Route path="/pricing" element={<PricingPage />} />
-      
+
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
