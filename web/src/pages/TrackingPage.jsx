@@ -15,9 +15,42 @@ import { db } from '../firebase'
 import { GoogleMap, useJsApiLoader, Marker, DirectionsRenderer } from '@react-google-maps/api'
 import { colors, radius, typography, spacing } from '../theme'
 
+// smoothlyAnimateMarker — interpolates a marker position between
+// two GPS coordinates over a given duration.
+// This makes the rider appear to glide on the map instead of
+// teleporting between GPS updates (which arrive every 3-5 seconds).
+//
+// @param {google.maps.Marker} marker - the marker to animate
+// @param {object} from - { lat, lng } starting position
+// @param {object} to - { lat, lng } ending position
+// @param {number} duration - animation duration in ms
+function smoothlyAnimateMarker(setPosition, from, to, duration = 1500) {
+  const startTime = performance.now()
+
+  function animate(currentTime) {
+    const elapsed = currentTime - startTime
+    const progress = Math.min(elapsed / duration, 1)
+
+    // Ease-out cubic — starts fast, slows at end
+    const eased = 1 - Math.pow(1 - progress, 3)
+
+    const lat = from.lat + (to.lat - from.lat) * eased
+    const lng = from.lng + (to.lng - from.lng) * eased
+
+    setPosition({ lat, lng })
+
+    if (progress < 1) {
+      requestAnimationFrame(animate)
+    }
+  }
+
+  requestAnimationFrame(animate)
+}
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL
 const MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 const LIBRARIES = ['places']
+const NAIROBI_CENTER = { lat: -1.2921, lng: 36.8219 }
 
 const MAP_STYLE = [
   { featureType: 'poi', stylers: [{ visibility: 'off' }] },
@@ -57,11 +90,13 @@ export default function TrackingPage() {
   const { token } = useParams()
   const [orderData, setOrderData] = useState(null)
   const [riderLocation, setRiderLocation] = useState(null)
+  const [animatedPosition, setAnimatedPosition] = useState(null)
+  const previousPositionRef = useRef(null)
+  const mapInstanceRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [errorType, setErrorType] = useState(null) // 'invalid' | 'server'
   const [directions, setDirections] = useState(null)
   const [destLatLng, setDestLatLng] = useState(null)
-  const mapRef = useState(null)
 
   const { isLoaded: mapsLoaded } = useJsApiLoader({
     googleMapsApiKey: MAPS_KEY,
@@ -91,24 +126,38 @@ export default function TrackingPage() {
 
   // ── Listen to Firestore for live GPS ─────────────────────────────────
   useEffect(() => {
-    if (!orderData?.firestore_path) return
+  if (!orderData?.firestore_path) return
 
-    const unsubscribe = onSnapshot(
-      doc(db, orderData.firestore_path),
-      snapshot => {
-        if (snapshot.exists()) {
-          const data = snapshot.data()
-          setRiderLocation({
-            lat: data.lat,
-            lng: data.lng,
-          })
+  const unsubscribe = onSnapshot(
+    doc(db, orderData.firestore_path),
+    snapshot => {
+      if (snapshot.exists()) {
+        const data = snapshot.data()
+        const newPosition = { lat: data.lat, lng: data.lng }
+
+        setRiderLocation(newPosition)
+
+        // Animate smoothly from previous position to new position
+        if (previousPositionRef.current) {
+          smoothlyAnimateMarker(
+            setAnimatedPosition,
+            previousPositionRef.current,
+            newPosition,
+            1500 // 1.5 second animation
+          )
+        } else {
+          // First position — no animation needed
+          setAnimatedPosition(newPosition)
         }
-      },
-      err => console.error('Firestore error:', err)
-    )
 
-    return () => unsubscribe()
-  }, [orderData?.firestore_path])
+        previousPositionRef.current = newPosition
+      }
+    },
+    err => console.error('Firestore error:', err)
+  )
+
+  return () => unsubscribe()
+}, [orderData?.firestore_path])
 
   // ── Geocode delivery address and get directions ──────────────────────
   useEffect(() => {
@@ -141,6 +190,13 @@ export default function TrackingPage() {
       }
     )
   }, [mapsLoaded, riderLocation, orderData?.customer_address])
+
+  // Pan map to follow rider as they move
+  useEffect(() => {
+    if (mapInstanceRef.current && animatedPosition) {
+      mapInstanceRef.current.panTo(animatedPosition)
+    }
+  }, [animatedPosition])
 
   // ── Loading state ────────────────────────────────────────────────────
   if (loading) {
@@ -190,7 +246,7 @@ export default function TrackingPage() {
 
   const isDelivered = status === 'DELIVERED'
   const isInTransit = status === 'IN_TRANSIT'
-  const showMap = ['PICKED_UP', 'IN_TRANSIT'].includes(status) && riderLocation
+  const showMap = ['PICKED_UP', 'IN_TRANSIT'].includes(status) && animatedPosition
   const showPin = isInTransit && delivery_pin
   const currentStepIndex = STATUS_STEPS.indexOf(status)
 
@@ -308,25 +364,33 @@ export default function TrackingPage() {
         </div>
       )}
 
+      {/* Live indicator — shown when rider is actively moving */}
+      {showMap && <LiveIndicator />}
+
       {/* ── Live map ───────────────────────────────────────────────── */}
       {showMap && mapsLoaded && (
         <div style={pageStyles.mapContainer}>
           <GoogleMap
             mapContainerStyle={pageStyles.map}
-            center={riderLocation}
-            zoom={14}
+            center={animatedPosition || NAIROBI_CENTER}
+            zoom={15}
+            onLoad={map => { mapInstanceRef.current = map }}
             options={{
               disableDefaultUI: true,
               zoomControl: true,
               styles: MAP_STYLE,
             }}
+
           >
-            {/* Rider marker */}
-            <Marker
-              position={riderLocation}
-              icon={TRUCK_ICON}
-              title="Your delivery rider"
-            />
+            {/* Rider marker — uses animated position for smooth movement */}
+            {animatedPosition && (
+              <Marker
+                position={animatedPosition}
+                icon={TRUCK_ICON}
+                title="Your delivery rider"
+              />
+            )}
+
 
             {/* Destination marker */}
             {destLatLng && (
@@ -788,5 +852,56 @@ const pageStyles = {
     color: colors.textMuted,
     fontSize: typography.xs,
     margin: 0,
+  },
+}
+
+// LiveIndicator — shows a pulsing orange dot to signal
+// that the tracking is live and the rider location is updating.
+// Displayed next to the status bar when rider is in transit.
+
+function LiveIndicator() {
+  return (
+    <div style={liveStyles.wrapper}>
+      <div style={liveStyles.pulse} />
+      <span style={liveStyles.text}>Live tracking</span>
+
+      <style>{`
+        @keyframes pulse {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.5); opacity: 0.5; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+const liveStyles = {
+  wrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '4px 10px',
+    background: `${colors.success}18`,
+    borderRadius: colors.full,
+    border: `1px solid ${colors.success}40`,
+    margin: `0 ${spacing.md}px ${spacing.md}px`,
+    width: 'fit-content',
+  },
+  pulse: {
+    width: 8,
+    height: 8,
+    borderRadius: '50%',
+    background: colors.success,
+    animation: 'pulse 1.5s ease-in-out infinite',
+  },
+  text: {
+    fontSize: typography.xs,
+    color: colors.success,
+    fontWeight: typography.semibold,
   },
 }
