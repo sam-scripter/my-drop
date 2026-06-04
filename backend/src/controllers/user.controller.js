@@ -4,11 +4,14 @@ const bcrypt = require('bcryptjs');
 const prisma = require('../utils/prisma');
 const { generateTempPassword } = require('../utils/helpers');
 
+
 /**
  * POST /api/users/rider
  * Manager creates a new rider account.
- * In Phase 6, the temporary password will be SMS'd to the rider via Twilio.
- * For now it's returned in the response so you can test.
+ * - Generates a temporary password
+ * - Sets must_change_password = true so the rider is forced to change it
+ * - Emails the rider their credentials directly
+ * - Does NOT return the temp password in the API response (security fix)
  */
 async function createRider(req, res, next) {
   try {
@@ -27,21 +30,35 @@ async function createRider(req, res, next) {
     const tempPassword = generateTempPassword();
     const password_hash = await bcrypt.hash(tempPassword, 12);
 
+    // Get the business details for the email
+    const business = await prisma.business.findUnique({
+      where: { id: req.user.businessId }
+    });
+
     const rider = await prisma.user.create({
       data: {
-        business_id: req.user.businessId, // scoped to this manager's business
+        business_id: req.user.businessId,
         name,
         phone,
         email,
         password_hash,
         role: 'RIDER',
+        must_change_password: true, // rider must change on first login
       }
     });
 
-    // TODO Phase 6: send tempPassword to rider via Twilio SMS
-    // For now, return it in the response for testing
+    // Email the rider their credentials — don't await, don't block the response
+    const { sendRiderCredentials } = require('../services/email.service');
+    sendRiderCredentials(
+      { name: rider.name, email: rider.email, phone: rider.phone },
+      tempPassword,
+      { name: business.name }
+    ).catch(err => console.error('Rider credentials email failed:', err.message));
+
+    // Return the rider info but NOT the temp password
+    // The password goes to the rider's email only
     res.status(201).json({
-      message: 'Rider account created successfully',
+      message: 'Rider account created successfully. Login credentials have been sent to their email.',
       rider: {
         id: rider.id,
         name: rider.name,
@@ -49,7 +66,6 @@ async function createRider(req, res, next) {
         email: rider.email,
         role: rider.role,
       },
-      tempPassword, // remove this after Phase 6 SMS is implemented
     });
 
   } catch (err) {
@@ -112,6 +128,57 @@ async function updateFcmToken(req, res, next) {
 }
 
 /**
+ * PUT /api/users/change-password
+ * Allows any logged-in user (manager or rider) to change their password.
+ * Also clears the must_change_password flag after a successful change.
+ * Requires the current password to be provided as verification.
+ */
+async function changePassword(req, res, next) {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    // Get the full user record including password hash
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        error: true,
+        message: 'User not found',
+        code: 'NOT_FOUND'
+      });
+    }
+
+    // Verify current password is correct before allowing the change
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!passwordMatch) {
+      return res.status(400).json({
+        error: true,
+        message: 'Current password is incorrect',
+        code: 'INVALID_PASSWORD'
+      });
+    }
+
+    // Hash the new password
+    const new_password_hash = await bcrypt.hash(newPassword, 12);
+
+    // Update password and clear the must_change_password flag
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password_hash: new_password_hash,
+        must_change_password: false,
+      }
+    });
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
  * PUT /api/users/riders/:id/toggle
  * Manager activates or deactivates a rider account.
  */
@@ -147,4 +214,4 @@ async function toggleRiderStatus(req, res, next) {
   }
 }
 
-module.exports = { createRider, getRiders, updateFcmToken, toggleRiderStatus };
+module.exports = { createRider, getRiders, updateFcmToken, toggleRiderStatus, changePassword };

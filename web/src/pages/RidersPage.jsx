@@ -72,7 +72,7 @@ export default function RidersPage() {
 
             {tempPassword ? (
               <div>
-                <div style={styles.successMsg}>Rider created successfully!</div>
+                <div style={styles.successMsg}>Rider created successfully! Login credentials have been sent to their email.</div>
                 <div style={styles.tempBox}>
                   <div style={styles.tempLabel}>Temporary password (share with rider)</div>
                   <div style={styles.tempPassword}>{tempPassword}</div>

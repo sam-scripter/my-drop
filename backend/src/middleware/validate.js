@@ -63,6 +63,12 @@ const schemas = {
     password: zod.string().min(1, 'Password is required'),
   }),
 
+  // PUT /api/users/change-password
+  changePassword: zod.object({
+    currentPassword: zod.string().min(1, 'Current password is required'),
+    newPassword: zod.string().min(8, 'New password must be at least 8 characters'),
+  }),
+
   // PUT /api/business/me
   updateBusiness: zod.object({
     name: zod.string().min(2).optional(),

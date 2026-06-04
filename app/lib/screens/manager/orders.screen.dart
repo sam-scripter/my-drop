@@ -18,10 +18,22 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   String? _selectedStatus;
 
   final List<String?> _statusFilters = [
-    null, 'PENDING', 'ASSIGNED', 'PICKED_UP', 'IN_TRANSIT', 'DELIVERED', 'FAILED'
+    null,
+    'PENDING',
+    'ASSIGNED',
+    'PICKED_UP',
+    'IN_TRANSIT',
+    'DELIVERED',
+    'FAILED'
   ];
   final List<String> _statusLabels = [
-    'All', 'Pending', 'Assigned', 'Picked Up', 'In Transit', 'Delivered', 'Failed'
+    'All',
+    'Pending',
+    'Assigned',
+    'Picked Up',
+    'In Transit',
+    'Delivered',
+    'Failed'
   ];
 
   @override
@@ -89,26 +101,26 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _orders.isEmpty
-                ? const Center(
-              child: Text(
-                'No orders found',
-                style: TextStyle(color: Color(0xFF5F6368)),
-              ),
-            )
-                : RefreshIndicator(
-              onRefresh: _loadOrders,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _orders.length,
-                itemBuilder: (context, index) {
-                  final order = _orders[index];
-                  return _OrderCard(
-                    order: order,
-                    onAssign: _loadOrders,
-                  );
-                },
-              ),
-            ),
+                    ? const Center(
+                        child: Text(
+                          'No orders found',
+                          style: TextStyle(color: Color(0xFF5F6368)),
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _loadOrders,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: _orders.length,
+                          itemBuilder: (context, index) {
+                            final order = _orders[index];
+                            return _OrderCard(
+                              order: order,
+                              onAssign: _loadOrders,
+                            );
+                          },
+                        ),
+                      ),
           ),
         ],
       ),
@@ -151,46 +163,46 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
           child: riders.isEmpty
               ? const Text('No active riders available')
               : ListView.builder(
-            shrinkWrap: true,
-            itemCount: riders.length,
-            itemBuilder: (context, index) {
-              final rider = riders[index];
-              return ListTile(
-                leading: const CircleAvatar(
-                  child: Icon(Icons.person),
-                ),
-                title: Text(rider['name']),
-                subtitle: Text(rider['phone']),
-                onTap: () async {
-                  Navigator.pop(context);
-                  try {
-                    await api.assignRider(
-                      orderId: widget.order['id'],
-                      riderId: rider['id'],
+                  shrinkWrap: true,
+                  itemCount: riders.length,
+                  itemBuilder: (context, index) {
+                    final rider = riders[index];
+                    return ListTile(
+                      leading: const CircleAvatar(
+                        child: Icon(Icons.person),
+                      ),
+                      title: Text(rider['name']),
+                      subtitle: Text(rider['phone']),
+                      onTap: () async {
+                        Navigator.pop(context);
+                        try {
+                          await api.assignRider(
+                            orderId: widget.order['id'],
+                            riderId: rider['id'],
+                          );
+                          widget.onAssign();
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Rider assigned successfully'),
+                                backgroundColor: Color(0xFF34A853),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Failed to assign rider'),
+                                backgroundColor: Color(0xFFEA4335),
+                              ),
+                            );
+                          }
+                        }
+                      },
                     );
-                    widget.onAssign();
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Rider assigned successfully'),
-                          backgroundColor: Color(0xFF34A853),
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Failed to assign rider'),
-                          backgroundColor: Color(0xFFEA4335),
-                        ),
-                      );
-                    }
-                  }
-                },
-              );
-            },
-          ),
+                  },
+                ),
         ),
         actions: [
           TextButton(
@@ -226,8 +238,8 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
@@ -257,8 +269,8 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                 Expanded(
                   child: Text(
                     order['customer_address'],
-                    style: const TextStyle(
-                        color: Color(0xFF5F6368), fontSize: 13),
+                    style:
+                        const TextStyle(color: Color(0xFF5F6368), fontSize: 13),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -319,8 +331,8 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                   const SizedBox(width: 4),
                   Text(
                     'Rider: ${order['delivery']['rider']['name']}',
-                    style: const TextStyle(
-                        color: Color(0xFF5F6368), fontSize: 13),
+                    style:
+                        const TextStyle(color: Color(0xFF5F6368), fontSize: 13),
                   ),
                 ],
               ),
@@ -333,13 +345,20 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
 
   Color _statusColor(String status) {
     switch (status) {
-      case 'PENDING': return Colors.grey;
-      case 'ASSIGNED': return const Color(0xFFFBBC04);
-      case 'PICKED_UP': return Colors.orange;
-      case 'IN_TRANSIT': return const Color(0xFF1A73E8);
-      case 'DELIVERED': return const Color(0xFF34A853);
-      case 'FAILED': return const Color(0xFFEA4335);
-      default: return Colors.grey;
+      case 'PENDING':
+        return Colors.grey;
+      case 'ASSIGNED':
+        return const Color(0xFFFBBC04);
+      case 'PICKED_UP':
+        return Colors.orange;
+      case 'IN_TRANSIT':
+        return const Color(0xFF1A73E8);
+      case 'DELIVERED':
+        return const Color(0xFF34A853);
+      case 'FAILED':
+        return const Color(0xFFEA4335);
+      default:
+        return Colors.grey;
     }
   }
 }

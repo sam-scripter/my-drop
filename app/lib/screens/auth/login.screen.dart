@@ -40,11 +40,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       final result = await ref.read(authProvider.notifier).login(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+          );
 
       if (!mounted) return;
+
+      // If rider must change password, redirect to change password screen first
+      if (result.mustChangePassword) {
+        Navigator.pushReplacementNamed(context, '/change-password');
+        return;
+      }
 
       // Navigate based on role
       if (result.user.isManager) {
@@ -202,17 +208,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   onPressed: _isLoading ? null : _handleLogin,
                   child: _isLoading
                       ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
                       : const Text(
-                    'Sign in',
-                    style: TextStyle(fontSize: 16),
-                  ),
+                          'Sign in',
+                          style: TextStyle(fontSize: 16),
+                        ),
                 ),
               ],
             ),

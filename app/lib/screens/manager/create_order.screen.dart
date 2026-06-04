@@ -75,113 +75,106 @@ class _CreateOrderScreenState extends ConsumerState<CreateOrderScreen> {
       appBar: AppBar(title: const Text('New Order')),
       body: _createdOrder != null
           ? _SuccessView(
-        order: _createdOrder!,
-        onCreateAnother: () => setState(() => _createdOrder = null),
-        onGoToOrders: () => Navigator.pop(context),
-      )
+              order: _createdOrder!,
+              onCreateAnother: () => setState(() => _createdOrder = null),
+              onGoToOrders: () => Navigator.pop(context),
+            )
           : SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Customer details',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Customer details',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Customer name *',
+                        prefixIcon: Icon(Icons.person_outline),
+                      ),
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: const InputDecoration(
+                        labelText: 'Phone number *',
+                        prefixIcon: Icon(Icons.phone_outlined),
+                        hintText: '0712345678',
+                      ),
+                      validator: (v) => v == null || v.length < 10
+                          ? 'Enter a valid phone number'
+                          : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _addressController,
+                      decoration: const InputDecoration(
+                        labelText: 'Delivery address *',
+                        prefixIcon: Icon(Icons.location_on_outlined),
+                        hintText: 'e.g. Kilimani, Nairobi',
+                      ),
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Order details',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _itemsController,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Items description',
+                        prefixIcon: Icon(Icons.inventory_2_outlined),
+                        hintText: 'e.g. 2x Chicken burger, 1x Fries',
+                        alignLabelWithHint: true,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _notesController,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: 'Notes for rider',
+                        prefixIcon: Icon(Icons.note_outlined),
+                        hintText: 'e.g. Call on arrival, gate code: 1234',
+                        alignLabelWithHint: true,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _handleSubmit,
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text('Create Order'),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Customer name *',
-                  prefixIcon: Icon(Icons.person_outline),
-                ),
-                validator: (v) =>
-                v == null || v.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-
-              TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Phone number *',
-                  prefixIcon: Icon(Icons.phone_outlined),
-                  hintText: '0712345678',
-                ),
-                validator: (v) =>
-                v == null || v.length < 10 ? 'Enter a valid phone number' : null,
-              ),
-              const SizedBox(height: 12),
-
-              TextFormField(
-                controller: _addressController,
-                decoration: const InputDecoration(
-                  labelText: 'Delivery address *',
-                  prefixIcon: Icon(Icons.location_on_outlined),
-                  hintText: 'e.g. Kilimani, Nairobi',
-                ),
-                validator: (v) =>
-                v == null || v.isEmpty ? 'Required' : null,
-              ),
-
-              const SizedBox(height: 24),
-              const Text(
-                'Order details',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              TextFormField(
-                controller: _itemsController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Items description',
-                  prefixIcon: Icon(Icons.inventory_2_outlined),
-                  hintText: 'e.g. 2x Chicken burger, 1x Fries',
-                  alignLabelWithHint: true,
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              TextFormField(
-                controller: _notesController,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Notes for rider',
-                  prefixIcon: Icon(Icons.note_outlined),
-                  hintText: 'e.g. Call on arrival, gate code: 1234',
-                  alignLabelWithHint: true,
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              ElevatedButton(
-                onPressed: _isLoading ? null : _handleSubmit,
-                child: _isLoading
-                    ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                )
-                    : const Text('Create Order'),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

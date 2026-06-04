@@ -32,7 +32,8 @@ class ApiService {
       },
       onError: (error, handler) {
         // Log errors in development
-        print('API Error: ${error.response?.statusCode} ${error.requestOptions.path}');
+        print(
+            'API Error: ${error.response?.statusCode} ${error.requestOptions.path}');
         print('Response: ${error.response?.data}');
         handler.next(error);
       },
@@ -148,6 +149,16 @@ class ApiService {
 
   Future<void> updateFcmToken(String token) async {
     await _dio.put('/users/fcm-token', data: {'fcm_token': token});
+  }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _dio.put('/users/change-password', data: {
+      'currentPassword': currentPassword,
+      'newPassword': newPassword,
+    });
   }
 
   // ── Business ──────────────────────────────────────────────────────

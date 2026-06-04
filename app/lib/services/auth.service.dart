@@ -17,7 +17,8 @@ class AuthService {
 
   // ── Login ─────────────────────────────────────────────────────────
 
-  Future<({UserModel user, BusinessModel business})> login({
+  Future<({UserModel user, BusinessModel business, bool mustChangePassword})>
+      login({
     required String email,
     required String password,
   }) async {
@@ -34,12 +35,17 @@ class AuthService {
 
     final user = UserModel.fromJson(data['user']);
     final business = BusinessModel.fromJson(data['business']);
+    final mustChangePassword = data['must_change_password'] == true;
 
     // Register FCM token so this device receives push notifications
     // Do this after login so we have the JWT ready to call the API
     _registerFcmToken();
 
-    return (user: user, business: business);
+    return (
+      user: user,
+      business: business,
+      mustChangePassword: mustChangePassword
+    );
   }
 
   // Runs in background — don't await, don't block login
@@ -62,7 +68,6 @@ class AuthService {
   }
 
   // ── Logout ────────────────────────────────────────────────────────
-
   Future<void> logout() async {
     await _storage.deleteAll();
   }

@@ -69,157 +69,157 @@ class _ManagerDashboardScreenState
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-        onRefresh: _loadData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Greeting
-              Text(
-                'Good ${_greeting()}, ${user?.name.split(' ').first}',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Text(
-                "Here's what's happening today",
-                style: TextStyle(color: Color(0xFF5F6368)),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Summary cards
-              if (_analytics != null) ...[
-                const Text(
-                  'Today',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
+              onRefresh: _loadData,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: _SummaryCard(
-                        label: 'Orders',
-                        value: '${_analytics!['orders_created'] ?? 0}',
-                        icon: Icons.receipt_long,
-                        color: const Color(0xFF1A73E8),
+                    // Greeting
+                    Text(
+                      'Good ${_greeting()}, ${user?.name.split(' ').first}',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _SummaryCard(
-                        label: 'Delivered',
-                        value: '${_analytics!['delivered'] ?? 0}',
-                        icon: Icons.check_circle,
-                        color: const Color(0xFF34A853),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _SummaryCard(
-                        label: 'Failed',
-                        value: '${_analytics!['failed'] ?? 0}',
-                        icon: Icons.cancel,
-                        color: const Color(0xFFEA4335),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _SummaryCard(
-                        label: 'Avg Time',
-                        value: _analytics!['avg_delivery_minutes'] != null
-                            ? '${_analytics!['avg_delivery_minutes']}m'
-                            : '--',
-                        icon: Icons.timer,
-                        color: const Color(0xFFFBBC04),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-
-              const SizedBox(height: 24),
-
-              // Quick actions
-              const Text(
-                'Quick actions',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _ActionButton(
-                      label: 'New Order',
-                      icon: Icons.add_circle_outline,
-                      onTap: () => Navigator.pushNamed(
-                          context, '/manager/create-order'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _ActionButton(
-                      label: 'All Orders',
-                      icon: Icons.list_alt,
-                      onTap: () => Navigator.pushNamed(
-                          context, '/manager/orders'),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              // Recent orders
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Recent orders',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () =>
-                        Navigator.pushNamed(context, '/manager/orders'),
-                    child: const Text('See all'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-
-              if (_recentOrders.isEmpty)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Text(
-                      'No orders today yet.\nTap New Order to get started.',
-                      textAlign: TextAlign.center,
+                    const Text(
+                      "Here's what's happening today",
                       style: TextStyle(color: Color(0xFF5F6368)),
                     ),
-                  ),
-                )
-              else
-                ..._recentOrders.map((order) => _OrderTile(order: order)),
-            ],
-          ),
-        ),
-      ),
+
+                    const SizedBox(height: 24),
+
+                    // Summary cards
+                    if (_analytics != null) ...[
+                      const Text(
+                        'Today',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _SummaryCard(
+                              label: 'Orders',
+                              value: '${_analytics!['orders_created'] ?? 0}',
+                              icon: Icons.receipt_long,
+                              color: const Color(0xFF1A73E8),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _SummaryCard(
+                              label: 'Delivered',
+                              value: '${_analytics!['delivered'] ?? 0}',
+                              icon: Icons.check_circle,
+                              color: const Color(0xFF34A853),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _SummaryCard(
+                              label: 'Failed',
+                              value: '${_analytics!['failed'] ?? 0}',
+                              icon: Icons.cancel,
+                              color: const Color(0xFFEA4335),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _SummaryCard(
+                              label: 'Avg Time',
+                              value: _analytics!['avg_delivery_minutes'] != null
+                                  ? '${_analytics!['avg_delivery_minutes']}m'
+                                  : '--',
+                              icon: Icons.timer,
+                              color: const Color(0xFFFBBC04),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+
+                    const SizedBox(height: 24),
+
+                    // Quick actions
+                    const Text(
+                      'Quick actions',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _ActionButton(
+                            label: 'New Order',
+                            icon: Icons.add_circle_outline,
+                            onTap: () => Navigator.pushNamed(
+                                context, '/manager/create-order'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _ActionButton(
+                            label: 'All Orders',
+                            icon: Icons.list_alt,
+                            onTap: () =>
+                                Navigator.pushNamed(context, '/manager/orders'),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Recent orders
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Recent orders',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () =>
+                              Navigator.pushNamed(context, '/manager/orders'),
+                          child: const Text('See all'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    if (_recentOrders.isEmpty)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(32),
+                          child: Text(
+                            'No orders today yet.\nTap New Order to get started.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Color(0xFF5F6368)),
+                          ),
+                        ),
+                      )
+                    else
+                      ..._recentOrders.map((order) => _OrderTile(order: order)),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 
@@ -358,13 +358,20 @@ class _OrderTile extends StatelessWidget {
 
   Color _statusColor(String status) {
     switch (status) {
-      case 'PENDING': return Colors.grey;
-      case 'ASSIGNED': return const Color(0xFFFBBC04);
-      case 'PICKED_UP': return Colors.orange;
-      case 'IN_TRANSIT': return const Color(0xFF1A73E8);
-      case 'DELIVERED': return const Color(0xFF34A853);
-      case 'FAILED': return const Color(0xFFEA4335);
-      default: return Colors.grey;
+      case 'PENDING':
+        return Colors.grey;
+      case 'ASSIGNED':
+        return const Color(0xFFFBBC04);
+      case 'PICKED_UP':
+        return Colors.orange;
+      case 'IN_TRANSIT':
+        return const Color(0xFF1A73E8);
+      case 'DELIVERED':
+        return const Color(0xFF34A853);
+      case 'FAILED':
+        return const Color(0xFFEA4335);
+      default:
+        return Colors.grey;
     }
   }
 }

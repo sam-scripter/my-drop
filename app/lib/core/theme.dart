@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // ── Brand colors ─────────────────────────────────────────────────
-  static const Color primary = Color(0xFF1A73E8);      // mydrop blue
+  static const Color primary = Color(0xFF1A73E8); // mydrop blue
   static const Color primaryDark = Color(0xFF1557B0);
-  static const Color accent = Color(0xFF34A853);       // green for success
-  static const Color warning = Color(0xFFFBBC04);      // amber for in-progress
-  static const Color error = Color(0xFFEA4335);        // red for failed
+  static const Color accent = Color(0xFF34A853); // green for success
+  static const Color warning = Color(0xFFFBBC04); // amber for in-progress
+  static const Color error = Color(0xFFEA4335); // red for failed
   static const Color surface = Color(0xFFF8F9FA);
   static const Color textPrimary = Color(0xFF202124);
   static const Color textSecondary = Color(0xFF5F6368);

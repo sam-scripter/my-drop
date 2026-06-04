@@ -156,6 +156,7 @@ async function login(req, res, next) {
     res.json({
       message: 'Login successful',
       token,
+      must_change_password: user.must_change_password,
       user: {
         id: user.id,
         name: user.name,

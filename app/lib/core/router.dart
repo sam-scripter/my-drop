@@ -7,11 +7,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth.provider.dart';
+import '../screens/auth/change_password.screen.dart';
 import '../screens/auth/login.screen.dart';
 import '../screens/manager/dashboard.screen.dart';
 import '../screens/manager/orders.screen.dart';
 import '../screens/manager/create_order.screen.dart';
 import '../screens/rider/home.screen.dart';
+import '../screens/rider/active_delivery.screen.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -21,13 +23,23 @@ class AppRouter {
       case '/login':
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case '/manager/dashboard':
-        return MaterialPageRoute(builder: (_) => const ManagerDashboardScreen());
+        return MaterialPageRoute(
+            builder: (_) => const ManagerDashboardScreen());
       case '/manager/orders':
         return MaterialPageRoute(builder: (_) => const OrdersScreen());
       case '/manager/create-order':
         return MaterialPageRoute(builder: (_) => const CreateOrderScreen());
       case '/rider/home':
         return MaterialPageRoute(builder: (_) => const RiderHomeScreen());
+      case '/rider/active-delivery':
+        final order = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => ActiveDeliveryScreen(order: order),
+        );
+      case '/change-password':
+        return MaterialPageRoute(
+          builder: (_) => const ChangePasswordScreen(isForced: true),
+        );
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

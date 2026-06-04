@@ -50,6 +50,7 @@ model User {
   role          Role     @default(RIDER)
   fcm_token     String?  // Firebase push notification token, updated on each login
   is_active     Boolean  @default(true)
+  must_change_password Boolean @default(false)
   created_at    DateTime @default(now())
 
   business   Business   @relation(fields: [business_id], references: [id])

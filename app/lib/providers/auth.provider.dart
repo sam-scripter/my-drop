@@ -31,7 +31,7 @@ class AuthNotifier extends StateNotifier<UserModel?> {
     state = user;
   }
 
-  Future<({UserModel user, BusinessModel business})> login({
+  Future<({UserModel user, BusinessModel business, bool mustChangePassword})> login({
     required String email,
     required String password,
   }) async {

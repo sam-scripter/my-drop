@@ -80,9 +80,7 @@ class DeliveryModel {
       deliveredAt: json['delivered_at'] != null
           ? DateTime.parse(json['delivered_at'])
           : null,
-      rider: json['rider'] != null
-          ? RiderInfo.fromJson(json['rider'])
-          : null,
+      rider: json['rider'] != null ? RiderInfo.fromJson(json['rider']) : null,
     );
   }
 }
