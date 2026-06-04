@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { getBusiness, getUser } from '../auth'
 import api from '../api'
 import DashboardLayout from '../components/DashboardLayout'
+import OnboardingWizard from '../components/OnboardingWizard'
 
 const STATUS_COLORS = {
   PENDING: '#9AA0A6',
@@ -24,6 +25,11 @@ export default function DashboardPage() {
   useEffect(() => {
     loadData()
   }, [])
+
+  // Show onboarding wizard if this is a new user (not dismissed before)
+  const [showOnboarding, setShowOnboarding] = useState(
+    () => localStorage.getItem('mydrop_onboarding_done') !== 'true'
+  )
 
   async function loadData() {
     setLoading(true)
@@ -46,6 +52,10 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
+      {/* Onboarding wizard — shown only on first visit */}
+      {showOnboarding && (
+        <OnboardingWizard onDismiss={() => setShowOnboarding(false)} />
+      )}
       <div style={styles.page}>
         {/* Header */}
         <div style={styles.header}>

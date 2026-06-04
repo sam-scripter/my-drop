@@ -14,6 +14,9 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import PricingPage from './pages/PricingPage'
 import LandingPage from './pages/LandingPage'
+import LandingPage from './pages/LandingPage'
+import PrivacyPage from './pages/PrivacyPage'
+import TermsPage from './pages/TermsPage'
 
 export default function App() {
   return (
@@ -55,6 +58,9 @@ export default function App() {
 
       {/* Public pricing page */}
       <Route path="/pricing" element={<PricingPage />} />
+
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/terms" element={<TermsPage />} />
 
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
