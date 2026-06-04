@@ -1,378 +1,544 @@
+// RidersPage.jsx — Manage riders
+//
+// Card grid layout showing rider status, contact details,
+// and delivery stats. Updated with orange/navy theme.
+
 import { useState, useEffect } from 'react'
-import api from '../api'
 import DashboardLayout from '../components/DashboardLayout'
+import api from '../api'
+import {
+  colors, shadows, radius, typography, spacing
+} from '../theme'
 
 export default function RidersPage() {
   const [riders, setRiders] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [showForm, setShowForm] = useState(false)
+  const [showAddModal, setShowAddModal] = useState(false)
   const [form, setForm] = useState({ name: '', phone: '', email: '' })
-  const [formLoading, setFormLoading] = useState(false)
-  const [formError, setFormError] = useState('')
-  const [tempPassword, setTempPassword] = useState(null)
+  const [addLoading, setAddLoading] = useState(false)
+  const [addError, setAddError] = useState('')
+  const [addSuccess, setAddSuccess] = useState('')
 
-  async function fetchRiders() {
+  useEffect(() => { loadRiders() }, [])
+
+  async function loadRiders() {
+    setLoading(true)
     try {
       const res = await api.get('/users/riders')
       setRiders(res.data.riders)
-    } catch {
-      setError('Failed to load riders')
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => { fetchRiders() }, [])
-
-  function handleFormChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
-
-  async function handleCreateRider(e) {
+  async function handleAddRider(e) {
     e.preventDefault()
-    setFormLoading(true)
-    setFormError('')
+    setAddLoading(true)
+    setAddError('')
+    setAddSuccess('')
+
     try {
-      const res = await api.post('/users/rider', form)
-      setTempPassword(res.data.tempPassword)
+      await api.post('/users/rider', form)
+      setAddSuccess(
+        `Rider account created. Login credentials sent to ${form.email}.`
+      )
       setForm({ name: '', phone: '', email: '' })
-      fetchRiders()
+      loadRiders()
     } catch (err) {
-      setFormError(err.response?.data?.message || 'Failed to create rider')
+      setAddError(
+        err.response?.data?.message || 'Failed to create rider account'
+      )
     } finally {
-      setFormLoading(false)
+      setAddLoading(false)
     }
   }
 
   async function handleToggle(riderId) {
     try {
       await api.put(`/users/riders/${riderId}/toggle`)
-      setRiders(prev =>
-        prev.map(r => r.id === riderId ? { ...r, is_active: !r.is_active } : r)
-      )
-    } catch {
-      alert('Failed to update rider status')
+      loadRiders()
+    } catch (err) {
+      console.error(err)
     }
   }
+
+  const activeCount = riders.filter(r => r.is_active).length
+  const inactiveCount = riders.length - activeCount
 
   return (
     <DashboardLayout>
       <div style={styles.page}>
-        <div style={styles.header}>
-          <h1 style={styles.title}>Riders</h1>
-          <button onClick={() => { setShowForm(true); setTempPassword(null) }} style={styles.addBtn}>
+
+        {/* ── Header ──────────────────────────────────────────────── */}
+        <div style={styles.pageHeader}>
+          <div>
+            <h1 style={styles.pageTitle}>Riders</h1>
+            <p style={styles.pageSubtitle}>
+              Manage your delivery fleet
+            </p>
+          </div>
+          <button
+            onClick={() => setShowAddModal(true)}
+            style={styles.addBtn}
+          >
             + Add Rider
           </button>
         </div>
 
-        {showForm && (
-          <div style={styles.formCard}>
-            <div style={styles.formTitle}>New Rider</div>
-
-            {tempPassword ? (
-              <div>
-                <div style={styles.successMsg}>Rider created successfully! Login credentials have been sent to their email.</div>
-                <div style={styles.tempBox}>
-                  <div style={styles.tempLabel}>Temporary password (share with rider)</div>
-                  <div style={styles.tempPassword}>{tempPassword}</div>
-                </div>
-                <button onClick={() => { setShowForm(false); setTempPassword(null) }} style={styles.doneBtn}>
-                  Done
-                </button>
+        {/* ── Summary row ─────────────────────────────────────────── */}
+        <div style={styles.summaryRow}>
+          {[
+            { label: 'Total Riders', value: riders.length, color: colors.text },
+            { label: 'Active', value: activeCount, color: colors.success },
+            { label: 'Inactive', value: inactiveCount, color: colors.textMuted },
+          ].map((item, i) => (
+            <div key={i} style={styles.summaryCard}>
+              <div style={{ ...styles.summaryValue, color: item.color }}>
+                {item.value}
               </div>
-            ) : (
-              <form onSubmit={handleCreateRider}>
-                {formError && <div style={styles.formError}>{formError}</div>}
-                <div style={styles.row}>
-                  <div style={styles.field}>
-                    <label style={styles.label}>Full name *</label>
-                    <input
-                      name="name"
-                      value={form.name}
-                      onChange={handleFormChange}
-                      style={styles.input}
-                      placeholder="e.g. James Mwangi"
-                      required
-                    />
-                  </div>
-                  <div style={styles.field}>
-                    <label style={styles.label}>Phone *</label>
-                    <input
-                      name="phone"
-                      value={form.phone}
-                      onChange={handleFormChange}
-                      style={styles.input}
-                      placeholder="0712345678"
-                      required
-                    />
-                  </div>
-                </div>
-                <div style={styles.field}>
-                  <label style={styles.label}>Email *</label>
-                  <input
-                    name="email"
-                    type="email"
-                    value={form.email}
-                    onChange={handleFormChange}
-                    style={styles.input}
-                    placeholder="rider@email.com"
-                    required
-                  />
-                </div>
-                <div style={styles.formActions}>
-                  <button type="button" onClick={() => setShowForm(false)} style={styles.cancelBtn}>
-                    Cancel
-                  </button>
-                  <button type="submit" disabled={formLoading} style={{ ...styles.submitBtn, opacity: formLoading ? 0.7 : 1 }}>
-                    {formLoading ? 'Creating...' : 'Create Rider'}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        )}
+              <div style={styles.summaryLabel}>{item.label}</div>
+            </div>
+          ))}
+        </div>
 
+        {/* ── Rider cards ─────────────────────────────────────────── */}
         {loading ? (
-          <div style={styles.empty}>Loading riders...</div>
-        ) : error ? (
-          <div style={styles.errorMsg}>{error}</div>
+          <div style={styles.loading}>Loading riders...</div>
         ) : riders.length === 0 ? (
-          <div style={styles.emptyCard}>
+          <div style={styles.emptyState}>
             <div style={styles.emptyIcon}>🏍️</div>
-            <div style={styles.emptyText}>No riders yet</div>
-            <div style={styles.emptySub}>Add your first rider to start assigning deliveries</div>
+            <h3 style={styles.emptyTitle}>No riders yet</h3>
+            <p style={styles.emptyText}>
+              Add your first rider to start assigning deliveries.
+            </p>
+            <button
+              onClick={() => setShowAddModal(true)}
+              style={styles.emptyBtn}
+            >
+              Add your first rider
+            </button>
           </div>
         ) : (
-          <div style={styles.table}>
-            <div style={styles.tableHeader}>
-              <div style={styles.colName}>Name</div>
-              <div style={styles.colPhone}>Phone</div>
-              <div style={styles.colEmail}>Email</div>
-              <div style={styles.colDeliveries}>Deliveries</div>
-              <div style={styles.colStatus}>Status</div>
-            </div>
+          <div style={styles.riderGrid}>
             {riders.map(rider => (
-              <div key={rider.id} style={styles.tableRow}>
-                <div style={styles.colName}>
-                  <div style={styles.avatar}>{rider.name.charAt(0).toUpperCase()}</div>
-                  <span style={styles.riderName}>{rider.name}</span>
-                </div>
-                <div style={styles.colPhone}>{rider.phone}</div>
-                <div style={styles.colEmail}>{rider.email}</div>
-                <div style={styles.colDeliveries}>{rider._count?.deliveries ?? 0}</div>
-                <div style={styles.colStatus}>
-                  <button
-                    onClick={() => handleToggle(rider.id)}
-                    style={{
-                      ...styles.statusBadge,
-                      background: rider.is_active ? '#E8F5E9' : '#F1F3F4',
-                      color: rider.is_active ? '#2E7D32' : '#5F6368',
-                    }}
-                  >
-                    {rider.is_active ? 'Active' : 'Inactive'}
-                  </button>
-                </div>
-              </div>
+              <RiderCard
+                key={rider.id}
+                rider={rider}
+                onToggle={() => handleToggle(rider.id)}
+              />
             ))}
           </div>
         )}
+
+        {/* ── Add rider modal ──────────────────────────────────────── */}
+        {showAddModal && (
+          <div style={styles.modalOverlay}>
+            <div style={styles.modal}>
+              <div style={styles.modalHeader}>
+                <h3 style={styles.modalTitle}>Add New Rider</h3>
+                <button
+                  onClick={() => {
+                    setShowAddModal(false)
+                    setAddError('')
+                    setAddSuccess('')
+                  }}
+                  style={styles.closeBtn}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {addSuccess ? (
+                <div>
+                  <div style={styles.successMsg}>{addSuccess}</div>
+                  <button
+                    onClick={() => {
+                      setShowAddModal(false)
+                      setAddSuccess('')
+                    }}
+                    style={styles.doneBtn}
+                  >
+                    Done
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleAddRider}>
+                  {addError && (
+                    <div style={styles.errorMsg}>{addError}</div>
+                  )}
+
+                  <div style={styles.field}>
+                    <label style={styles.label}>Full name *</label>
+                    <input
+                      value={form.name}
+                      onChange={e => setForm({ ...form, name: e.target.value })}
+                      style={styles.input}
+                      placeholder="Rider's full name"
+                      required
+                    />
+                  </div>
+
+                  <div style={styles.field}>
+                    <label style={styles.label}>Phone number *</label>
+                    <input
+                      value={form.phone}
+                      onChange={e => setForm({ ...form, phone: e.target.value })}
+                      style={styles.input}
+                      placeholder="07XXXXXXXX"
+                      required
+                    />
+                  </div>
+
+                  <div style={styles.field}>
+                    <label style={styles.label}>Email address *</label>
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={e => setForm({ ...form, email: e.target.value })}
+                      style={styles.input}
+                      placeholder="rider@example.com"
+                      required
+                    />
+                    <p style={styles.fieldHint}>
+                      Login credentials will be sent to this email.
+                    </p>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={addLoading}
+                    style={{
+                      ...styles.submitBtn,
+                      opacity: addLoading ? 0.7 : 1,
+                    }}
+                  >
+                    {addLoading ? 'Creating...' : 'Create rider account'}
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
+
       </div>
     </DashboardLayout>
   )
 }
 
+function RiderCard({ rider, onToggle }) {
+  const initials = rider.name
+    .split(' ')
+    .map(n => n[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+
+  return (
+    <div style={styles.riderCard}>
+      <div style={styles.cardTop}>
+        <div style={styles.avatar}>{initials}</div>
+        <div style={{
+          ...styles.statusBadge,
+          background: rider.is_active
+            ? colors.success + '18'
+            : colors.textMuted + '18',
+          color: rider.is_active ? colors.success : colors.textMuted,
+        }}>
+          {rider.is_active ? 'Active' : 'Inactive'}
+        </div>
+      </div>
+
+      <h3 style={styles.riderName}>{rider.name}</h3>
+      <p style={styles.riderEmail}>{rider.email}</p>
+
+      <div style={styles.riderDetails}>
+        <div style={styles.riderDetail}>
+          <span style={styles.detailIcon}>📞</span>
+          <span style={styles.detailText}>{rider.phone}</span>
+        </div>
+      </div>
+
+      <div style={styles.cardActions}>
+        <button
+          onClick={onToggle}
+          style={{
+            ...styles.toggleBtn,
+            background: rider.is_active
+              ? colors.errorLight
+              : colors.successLight,
+            color: rider.is_active ? colors.error : colors.success,
+            border: `1px solid ${rider.is_active
+              ? colors.error + '40'
+              : colors.success + '40'}`,
+          }}
+        >
+          {rider.is_active ? 'Deactivate' : 'Activate'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 const styles = {
-  page: {
-    padding: 32,
-    marginLeft: 240,
-    minHeight: '100vh',
-    background: '#F8F9FA',
+  page: { padding: spacing.xl },
+  pageHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.lg,
   },
-  header: {
+  pageTitle: {
+    fontSize: typography.xxl,
+    fontWeight: typography.bold,
+    color: colors.text,
+    margin: '0 0 4px',
+  },
+  pageSubtitle: {
+    fontSize: typography.base,
+    color: colors.textSecondary,
+    margin: 0,
+  },
+  addBtn: {
+    background: colors.primary,
+    color: 'white',
+    border: 'none',
+    padding: '10px 20px',
+    borderRadius: radius.md,
+    fontWeight: typography.semibold,
+    fontSize: typography.base,
+    cursor: 'pointer',
+    boxShadow: shadows.sm,
+  },
+  summaryRow: {
+    display: 'flex',
+    gap: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  summaryCard: {
+    background: colors.surface,
+    borderRadius: radius.lg,
+    padding: `${spacing.md}px ${spacing.lg}px`,
+    boxShadow: shadows.sm,
+    border: `1px solid ${colors.border}`,
+    minWidth: 120,
+  },
+  summaryValue: {
+    fontSize: typography.xxxl,
+    fontWeight: typography.bold,
+    lineHeight: 1,
+    marginBottom: 4,
+  },
+  summaryLabel: {
+    fontSize: typography.sm,
+    color: colors.textSecondary,
+  },
+  loading: {
+    padding: spacing.xxl,
+    textAlign: 'center',
+    color: colors.textSecondary,
+  },
+  emptyState: {
+    textAlign: 'center',
+    padding: `${spacing.xxxl}px 0`,
+  },
+  emptyIcon: { fontSize: 56, marginBottom: spacing.md },
+  emptyTitle: {
+    fontSize: typography.xl,
+    fontWeight: typography.semibold,
+    color: colors.text,
+    margin: '0 0 8px',
+  },
+  emptyText: {
+    color: colors.textSecondary,
+    margin: '0 0 24px',
+  },
+  emptyBtn: {
+    background: colors.primary,
+    color: 'white',
+    border: 'none',
+    padding: '12px 24px',
+    borderRadius: radius.md,
+    fontWeight: typography.semibold,
+    cursor: 'pointer',
+  },
+  riderGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+    gap: spacing.md,
+  },
+  riderCard: {
+    background: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    boxShadow: shadows.sm,
+    border: `1px solid ${colors.border}`,
+  },
+  cardTop: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.md,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: '50%',
+    background: colors.primary,
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    fontWeight: typography.bold,
+    fontSize: typography.lg,
+  },
+  statusBadge: {
+    padding: '4px 10px',
+    borderRadius: radius.full,
+    fontSize: typography.xs,
+    fontWeight: typography.semibold,
+  },
+  riderName: {
+    fontSize: typography.lg,
+    fontWeight: typography.semibold,
+    color: colors.text,
+    margin: '0 0 2px',
+  },
+  riderEmail: {
+    fontSize: typography.sm,
+    color: colors.textMuted,
+    margin: '0 0 12px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  riderDetails: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+    marginBottom: spacing.md,
+  },
+  riderDetail: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+  },
+  detailIcon: { fontSize: 14 },
+  detailText: {
+    fontSize: typography.sm,
+    color: colors.textSecondary,
+  },
+  cardActions: {
+    borderTop: `1px solid ${colors.border}`,
+    paddingTop: spacing.sm,
+  },
+  toggleBtn: {
+    width: '100%',
+    padding: '8px',
+    borderRadius: radius.md,
+    cursor: 'pointer',
+    fontSize: typography.sm,
+    fontWeight: typography.medium,
+  },
+  modalOverlay: {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(0,0,0,0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  modal: {
+    background: colors.surface,
+    borderRadius: radius.xl,
+    padding: spacing.lg,
+    width: 420,
+    boxShadow: shadows.xl,
+  },
+  modalHeader: {
+    display: 'flex',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    alignItems: 'center',
+    marginBottom: spacing.lg,
   },
-  title: { fontSize: 24, fontWeight: 'bold', margin: 0 },
-  addBtn: {
-    padding: '10px 20px',
-    background: '#1A73E8',
-    color: 'white',
+  modalTitle: {
+    fontSize: typography.xl,
+    fontWeight: typography.semibold,
+    color: colors.text,
+    margin: 0,
+  },
+  closeBtn: {
+    background: 'none',
     border: 'none',
-    borderRadius: 8,
+    fontSize: 18,
+    color: colors.textMuted,
     cursor: 'pointer',
-    fontSize: 14,
-    fontWeight: '600',
   },
-  formCard: {
-    background: 'white',
-    borderRadius: 12,
-    padding: 28,
-    maxWidth: 640,
-    marginBottom: 24,
-    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-  },
-  formTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 20,
-    color: '#1A1A1A',
-  },
-  formError: {
-    background: '#FFF5F5',
-    border: '1px solid #FECACA',
-    color: '#EA4335',
-    padding: '10px 14px',
-    borderRadius: 8,
-    fontSize: 13,
-    marginBottom: 16,
-  },
-  successMsg: {
-    background: '#E8F5E9',
-    color: '#2E7D32',
-    padding: '10px 14px',
-    borderRadius: 8,
-    fontSize: 13,
-    marginBottom: 16,
-    fontWeight: '500',
-  },
-  tempBox: {
-    background: '#F8F9FA',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 20,
-  },
-  tempLabel: { fontSize: 12, color: '#5F6368', marginBottom: 8 },
-  tempPassword: {
-    fontFamily: 'monospace',
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    letterSpacing: 2,
-  },
-  doneBtn: {
-    padding: '10px 24px',
-    background: '#1A73E8',
-    color: 'white',
-    border: 'none',
-    borderRadius: 8,
-    cursor: 'pointer',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  row: { display: 'flex', gap: 16 },
-  field: { flex: 1, marginBottom: 16 },
+  field: { marginBottom: spacing.md },
   label: {
     display: 'block',
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#374151',
+    fontSize: typography.sm,
+    fontWeight: typography.medium,
+    color: colors.text,
     marginBottom: 6,
   },
   input: {
     width: '100%',
     padding: '10px 14px',
-    border: '1px solid #D1D5DB',
-    borderRadius: 8,
-    fontSize: 14,
+    border: `1px solid ${colors.border}`,
+    borderRadius: radius.md,
+    fontSize: typography.base,
     outline: 'none',
     boxSizing: 'border-box',
-    fontFamily: 'inherit',
+    color: colors.text,
   },
-  formActions: {
-    display: 'flex',
-    gap: 12,
-    marginTop: 8,
-    justifyContent: 'flex-end',
-  },
-  cancelBtn: {
-    padding: '10px 24px',
-    background: '#F1F3F4',
-    border: 'none',
-    borderRadius: 8,
-    cursor: 'pointer',
-    fontSize: 14,
-    color: '#5F6368',
+  fieldHint: {
+    fontSize: typography.xs,
+    color: colors.textMuted,
+    margin: '4px 0 0',
   },
   submitBtn: {
-    padding: '10px 24px',
-    background: '#1A73E8',
+    width: '100%',
+    padding: '12px',
+    background: colors.primary,
     color: 'white',
     border: 'none',
-    borderRadius: 8,
+    borderRadius: radius.md,
+    fontSize: typography.base,
+    fontWeight: typography.semibold,
     cursor: 'pointer',
-    fontSize: 14,
-    fontWeight: '600',
+    marginTop: 8,
   },
-  empty: { color: '#5F6368', fontSize: 14, padding: 16 },
-  errorMsg: {
-    background: '#FFF5F5',
-    border: '1px solid #FECACA',
-    color: '#EA4335',
+  successMsg: {
+    background: colors.successLight,
+    border: `1px solid ${colors.success}40`,
+    color: colors.success,
     padding: '12px 16px',
-    borderRadius: 8,
-    fontSize: 14,
+    borderRadius: radius.md,
+    fontSize: typography.sm,
+    marginBottom: spacing.md,
+    lineHeight: 1.5,
   },
-  emptyCard: {
-    background: 'white',
-    borderRadius: 12,
-    padding: 48,
-    textAlign: 'center',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+  errorMsg: {
+    background: colors.errorLight,
+    border: `1px solid ${colors.error}40`,
+    color: colors.error,
+    padding: '12px 16px',
+    borderRadius: radius.md,
+    fontSize: typography.sm,
+    marginBottom: spacing.md,
   },
-  emptyIcon: { fontSize: 48, marginBottom: 12 },
-  emptyText: { fontSize: 16, fontWeight: '600', color: '#1A1A1A', marginBottom: 6 },
-  emptySub: { fontSize: 13, color: '#5F6368' },
-  table: {
-    background: 'white',
-    borderRadius: 12,
-    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-    overflow: 'hidden',
-  },
-  tableHeader: {
-    display: 'flex',
-    padding: '12px 20px',
-    background: '#F8F9FA',
-    borderBottom: '1px solid #E8EAED',
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#5F6368',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  tableRow: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '14px 20px',
-    borderBottom: '1px solid #F1F3F4',
-  },
-  colName: { flex: 2, display: 'flex', alignItems: 'center', gap: 10 },
-  colPhone: { flex: 1.5 },
-  colEmail: { flex: 2 },
-  colDeliveries: { flex: 1, textAlign: 'center' },
-  colStatus: { flex: 1, textAlign: 'right' },
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: '50%',
-    background: '#1A73E8',
+  doneBtn: {
+    width: '100%',
+    padding: '12px',
+    background: colors.success,
     color: 'white',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 14,
-    fontWeight: '600',
-    flexShrink: 0,
-  },
-  riderName: { fontSize: 14, fontWeight: '500', color: '#1A1A1A' },
-  statusBadge: {
-    padding: '4px 12px',
-    borderRadius: 20,
     border: 'none',
+    borderRadius: radius.md,
+    fontSize: typography.base,
+    fontWeight: typography.semibold,
     cursor: 'pointer',
-    fontSize: 12,
-    fontWeight: '500',
   },
 }

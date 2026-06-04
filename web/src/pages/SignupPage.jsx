@@ -1,8 +1,13 @@
 // SignupPage.jsx — New business registration
+//
+// Updated with orange/navy theme.
+// Includes business type dropdown added in Phase 7.1.
+
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { setAuth } from '../auth'
+import { saveAuth } from '../auth'
+import { colors, shadows, radius, typography, spacing } from '../theme'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL
 
@@ -15,10 +20,10 @@ export default function SignupPage() {
     managerName: '',
     password: '',
     confirmPassword: '',
-    businessType: 'OTHER', 
+    businessType: 'OTHER',
   })
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -35,20 +40,21 @@ export default function SignupPage() {
 
     setLoading(true)
     try {
-      const response = await axios.post(`${API_BASE}/auth/register`, {
+      const { data } = await axios.post(`${API_BASE}/auth/register`, {
         businessName: form.businessName,
         businessPhone: form.businessPhone,
         businessEmail: form.businessEmail,
         managerName: form.managerName,
         password: form.password,
-        businessType: form.businessType, 
+        businessType: form.businessType,
       })
 
-      const { token, user, business } = response.data
-      setAuth(token, user, business)
+      saveAuth(data.token, data.user, data.business)
       navigate('/dashboard')
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.')
+      setError(
+        err.response?.data?.message || 'Registration failed. Please try again.'
+      )
     } finally {
       setLoading(false)
     }
@@ -57,17 +63,22 @@ export default function SignupPage() {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
+
+        {/* Header */}
         <div style={styles.header}>
-          <h1 style={styles.title}>Get started with mydrop</h1>
+          <Link to="/" style={styles.logo}>🚚 mydrop</Link>
+          <h1 style={styles.title}>Get started free</h1>
           <p style={styles.subtitle}>
-            Set up your business and start tracking deliveries in minutes
+            Set up your business and start tracking deliveries in minutes.
+            14-day free trial — no credit card required.
           </p>
         </div>
 
         {error && <div style={styles.error}>{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          <div style={styles.section}>Business details</div>
+
+          <div style={styles.sectionLabel}>Business details</div>
 
           <div style={styles.field}>
             <label style={styles.label}>Business name *</label>
@@ -89,7 +100,7 @@ export default function SignupPage() {
                 value={form.businessPhone}
                 onChange={handleChange}
                 style={styles.input}
-                placeholder="0712345678"
+                placeholder="07XXXXXXXX"
                 required
               />
             </div>
@@ -106,7 +117,7 @@ export default function SignupPage() {
               />
             </div>
           </div>
-          {/* Business type selector */}
+
           <div style={styles.field}>
             <label style={styles.label}>Type of business *</label>
             <select
@@ -123,14 +134,14 @@ export default function SignupPage() {
               <option value="OTHER">Other</option>
             </select>
             <p style={styles.fieldHint}>
-              This helps us use the right language for your customers
+              Helps us use the right language for your customers
             </p>
           </div>
 
-          <div style={styles.section}>Your account</div>
+          <div style={styles.sectionLabel}>Your account</div>
 
           <div style={styles.field}>
-            <label style={styles.label}>Your name *</label>
+            <label style={styles.label}>Your full name *</label>
             <input
               name="managerName"
               value={form.managerName}
@@ -174,14 +185,20 @@ export default function SignupPage() {
             disabled={loading}
             style={{ ...styles.button, opacity: loading ? 0.7 : 1 }}
           >
-            {loading ? 'Creating account...' : 'Create account & get started'}
+            {loading
+              ? 'Creating your account...'
+              : 'Create account & start free trial →'}
           </button>
+
         </form>
 
         <p style={styles.loginLink}>
           Already have an account?{' '}
-          <Link to="/login" style={{ color: '#1A73E8' }}>Sign in</Link>
+          <Link to="/login" style={{ color: colors.primary }}>
+            Sign in
+          </Link>
         </p>
+
       </div>
     </div>
   )
@@ -193,94 +210,102 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: '#F8F9FA',
-    padding: 24,
+    background: colors.background,
+    padding: spacing.lg,
   },
   card: {
-    background: 'white',
-    borderRadius: 16,
+    background: colors.surface,
+    borderRadius: radius.xl,
     padding: 40,
     width: '100%',
     maxWidth: 600,
-    boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+    boxShadow: shadows.xl,
+    border: `1px solid ${colors.border}`,
   },
-  header: {
-    marginBottom: 32,
+  header: { marginBottom: spacing.xl },
+  logo: {
+    display: 'inline-block',
+    fontSize: typography.lg,
+    fontWeight: typography.bold,
+    color: colors.primary,
+    textDecoration: 'none',
+    marginBottom: spacing.md,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#202124',
+    fontSize: typography.xxl,
+    fontWeight: typography.bold,
+    color: colors.text,
     margin: '0 0 8px',
   },
   subtitle: {
-    color: '#5F6368',
-    fontSize: 14,
+    fontSize: typography.sm,
+    color: colors.textSecondary,
     margin: 0,
-  },
-  section: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#5F6368',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-    marginBottom: 12,
-    marginTop: 8,
+    lineHeight: 1.5,
   },
   error: {
-    background: '#FFF5F5',
-    border: '1px solid #FECACA',
-    color: '#EA4335',
+    background: colors.errorLight,
+    border: `1px solid ${colors.error}40`,
+    color: colors.error,
     padding: '12px 16px',
-    borderRadius: 8,
-    fontSize: 14,
-    marginBottom: 16,
+    borderRadius: radius.md,
+    fontSize: typography.sm,
+    marginBottom: spacing.md,
   },
-  row: {
-    display: 'flex',
-    gap: 16,
+  sectionLabel: {
+    fontSize: typography.xs,
+    fontWeight: typography.semibold,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    marginBottom: spacing.md,
+    marginTop: spacing.sm,
+    paddingBottom: 8,
+    borderBottom: `1px solid ${colors.border}`,
   },
-  field: {
-    flex: 1,
-    marginBottom: 16,
-  },
+  row: { display: 'flex', gap: spacing.md },
+  field: { flex: 1, marginBottom: spacing.md },
   label: {
     display: 'block',
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#374151',
+    fontSize: typography.sm,
+    fontWeight: typography.medium,
+    color: colors.text,
     marginBottom: 6,
   },
   input: {
     width: '100%',
     padding: '10px 14px',
-    border: '1px solid #D1D5DB',
-    borderRadius: 8,
-    fontSize: 14,
+    border: `1px solid ${colors.border}`,
+    borderRadius: radius.md,
+    fontSize: typography.base,
     outline: 'none',
     boxSizing: 'border-box',
+    fontFamily: 'inherit',
+    color: colors.text,
+    background: colors.surface,
+  },
+  fieldHint: {
+    fontSize: typography.xs,
+    color: colors.textMuted,
+    margin: '4px 0 0',
   },
   button: {
     width: '100%',
-    padding: '12px',
-    background: '#1A73E8',
+    padding: '14px',
+    background: colors.primary,
     color: 'white',
     border: 'none',
-    borderRadius: 8,
-    fontSize: 15,
-    fontWeight: '600',
+    borderRadius: radius.md,
+    fontSize: typography.md,
+    fontWeight: typography.semibold,
     cursor: 'pointer',
     marginTop: 8,
+    boxShadow: shadows.sm,
   },
   loginLink: {
     textAlign: 'center',
-    marginTop: 24,
-    fontSize: 14,
-    color: '#5F6368',
-  },
-  fieldHint: {
-    fontSize: 12,
-    color: '#5F6368',
-    marginTop: 4,
+    marginTop: spacing.lg,
+    fontSize: typography.sm,
+    color: colors.textSecondary,
   },
 }
