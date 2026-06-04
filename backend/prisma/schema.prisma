@@ -55,6 +55,7 @@ model User {
 
   business   Business   @relation(fields: [business_id], references: [id])
   deliveries Delivery[]
+  password_reset_tokens PasswordResetToken[]
 
   @@index([business_id])
   @@index([email])
@@ -142,4 +143,23 @@ model LocationSnapshot {
   delivery Delivery @relation(fields: [delivery_id], references: [id])
 
   @@index([delivery_id])
+}
+
+// ── PasswordResetToken ──────────────────────────────────────────────────
+// Stores time-limited tokens for password reset requests.
+// Each token is single-use and expires after 1 hour.
+// When a user requests a reset, a new token is generated and emailed to them.
+// When they click the link, the token is validated and marked as used.
+model PasswordResetToken {
+  id         String   @id @default(cuid())
+  user_id    String
+  token      String   @unique
+  expires_at DateTime
+  used       Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@index([token])
+  @@index([user_id])
 }

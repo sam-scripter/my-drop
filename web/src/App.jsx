@@ -10,6 +10,8 @@ import CreateOrderPage from './pages/CreateOrderPage'
 import RidersPage from './pages/RidersPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import { isLoggedIn } from './auth'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 
 export default function App() {
   return (
@@ -47,6 +49,10 @@ export default function App() {
           ? <Navigate to="/dashboard" replace />
           : <Navigate to="/login" replace />
       } />
+
+      {/* Password reset routes — public, no auth needed */}
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       {/* 404 */}
       <Route path="*" element={<NotFound />} />

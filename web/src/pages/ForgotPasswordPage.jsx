@@ -1,17 +1,20 @@
-// LoginPage.jsx — Manager login for the dashboard
+// ForgotPasswordPage.jsx — Request a password reset link
+//
+// The user enters their email and we send them a reset link.
+// We always show the same success message whether the email
+// exists or not — to prevent email enumeration attacks.
+
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import axios from 'axios'
-import { setAuth } from '../auth'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL
 
-export default function LoginPage() {
-  const navigate = useNavigate()
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -19,43 +22,53 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const response = await axios.post(`${API_BASE}/auth/login`, {
-        email,
-        password,
-      })
-
-      const { token, user, business } = response.data
-
-      if (user.role !== 'MANAGER') {
-        setError('This dashboard is for managers only. Use the mobile app instead.')
-        return
-      }
-
-      setAuth(token, user, business)
-      navigate('/dashboard')
+      await axios.post(`${API_BASE}/auth/forgot-password`, { email })
+      setSubmitted(true)
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password')
+      setError('Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
+  if (submitted) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.card}>
+          <div style={{ fontSize: 48, textAlign: 'center', marginBottom: 16 }}>
+            📧
+          </div>
+          <h2 style={styles.title}>Check your email</h2>
+          <p style={styles.subtitle}>
+            If an account exists for <strong>{email}</strong>, we've sent
+            a password reset link. Check your inbox and spam folder.
+          </p>
+          <p style={styles.subtitle}>
+            The link expires in 1 hour.
+          </p>
+          <Link to="/login" style={styles.backLink}>
+            ← Back to login
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={styles.page}>
       <div style={styles.card}>
-        {/* Logo */}
         <div style={styles.logo}>
           <div style={styles.logoIcon}>🚚</div>
           <h1 style={styles.logoText}>mydrop</h1>
-          <p style={styles.logoSub}>Management Dashboard</p>
         </div>
 
-        {/* Error */}
-        {error && (
-          <div style={styles.error}>{error}</div>
-        )}
+        <h2 style={styles.title}>Forgot your password?</h2>
+        <p style={styles.subtitle}>
+          Enter your email and we'll send you a link to reset your password.
+        </p>
 
-        {/* Form */}
+        {error && <div style={styles.error}>{error}</div>}
+
         <form onSubmit={handleSubmit}>
           <div style={styles.field}>
             <label style={styles.label}>Email address</label>
@@ -69,43 +82,18 @@ export default function LoginPage() {
             />
           </div>
 
-          <div style={styles.field}>
-            <label style={styles.label}>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={styles.input}
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          {/* Forgot password link */}
-          <div style={{ textAlign: 'right', marginTop: -8, marginBottom: 16 }}>
-            <Link
-              to="/forgot-password"
-              style={{ color: '#1A73E8', fontSize: 13, textDecoration: 'none' }}
-            >
-              Forgot password?
-            </Link>
-          </div>
-
           <button
             type="submit"
             disabled={loading}
             style={{ ...styles.button, opacity: loading ? 0.7 : 1 }}
           >
-            {loading ? 'Signing in...' : 'Sign in'}
+            {loading ? 'Sending...' : 'Send reset link'}
           </button>
         </form>
 
-        <p style={styles.signupLink}>
-          New business?{' '}
-          <Link to="/signup" style={{ color: '#1A73E8' }}>
-            Create an account
-          </Link>
-        </p>
+        <Link to="/login" style={styles.backLink}>
+          ← Back to login
+        </Link>
       </div>
     </div>
   )
@@ -128,25 +116,11 @@ const styles = {
     maxWidth: 400,
     boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
   },
-  logo: {
-    textAlign: 'center',
-    marginBottom: 32,
-  },
-  logoIcon: {
-    fontSize: 48,
-    marginBottom: 8,
-  },
-  logoText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1A73E8',
-    margin: 0,
-  },
-  logoSub: {
-    color: '#5F6368',
-    fontSize: 14,
-    marginTop: 4,
-  },
+  logo: { textAlign: 'center', marginBottom: 24 },
+  logoIcon: { fontSize: 40, marginBottom: 4 },
+  logoText: { fontSize: 24, fontWeight: 'bold', color: '#1A73E8', margin: 0 },
+  title: { fontSize: 20, fontWeight: 'bold', margin: '0 0 8px' },
+  subtitle: { color: '#5F6368', fontSize: 14, margin: '0 0 24px', lineHeight: 1.5 },
   error: {
     background: '#FFF5F5',
     border: '1px solid #FECACA',
@@ -156,9 +130,7 @@ const styles = {
     fontSize: 14,
     marginBottom: 16,
   },
-  field: {
-    marginBottom: 16,
-  },
+  field: { marginBottom: 16 },
   label: {
     display: 'block',
     fontSize: 13,
@@ -187,10 +159,12 @@ const styles = {
     cursor: 'pointer',
     marginTop: 8,
   },
-  signupLink: {
+  backLink: {
+    display: 'block',
     textAlign: 'center',
     marginTop: 24,
+    color: '#1A73E8',
+    textDecoration: 'none',
     fontSize: 14,
-    color: '#5F6368',
   },
 }

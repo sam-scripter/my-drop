@@ -63,6 +63,17 @@ const schemas = {
     password: zod.string().min(1, 'Password is required'),
   }),
 
+  // POST /api/auth/forgot-password
+  forgotPassword: zod.object({
+    email: zod.string().email('Enter a valid email address'),
+  }),
+
+  // POST /api/auth/reset-password
+  resetPassword: zod.object({
+    token: zod.string().min(1, 'Token is required'),
+    newPassword: zod.string().min(8, 'Password must be at least 8 characters'),
+  }),
+
   // PUT /api/users/change-password
   changePassword: zod.object({
     currentPassword: zod.string().min(1, 'Current password is required'),

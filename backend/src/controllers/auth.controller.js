@@ -175,4 +175,134 @@ async function login(req, res, next) {
   }
 }
 
-module.exports = { register, login };
+/**
+ * POST /api/auth/forgot-password
+ * Accepts an email address, generates a time-limited reset token,
+ * and emails a reset link to the user.
+ *
+ * Security note: we always return the same success message whether
+ * the email exists or not — this prevents attackers from discovering
+ * which emails are registered on the platform.
+ */
+async function forgotPassword(req, res, next) {
+  try {
+    const { email } = req.body;
+
+    // Look up the user — but don't reveal if they exist or not
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (user) {
+      // Generate a secure random token
+      const crypto = require('crypto');
+      const token = crypto.randomBytes(32).toString('hex');
+
+      // Token expires in 1 hour
+      const expires_at = new Date(Date.now() + 60 * 60 * 1000);
+
+      // Invalidate any existing unused tokens for this user
+      await prisma.passwordResetToken.updateMany({
+        where: {
+          user_id: user.id,
+          used: false,
+        },
+        data: { used: true }
+      });
+
+      // Save the new token
+      await prisma.passwordResetToken.create({
+        data: {
+          user_id: user.id,
+          token,
+          expires_at,
+        }
+      });
+
+      // Build the reset link
+      const resetLink = `${process.env.APP_URL || 'https://mydrop.duckdns.org'}/reset-password?token=${token}`;
+
+      // Send the email — don't await, don't block the response
+      const { sendPasswordResetEmail } = require('../services/email.service');
+      sendPasswordResetEmail(
+        { name: user.name, email: user.email },
+        resetLink
+      ).catch(err => console.error('Password reset email failed:', err.message));
+    }
+
+    // Always return success — never reveal if email exists
+    res.json({
+      message: 'If an account with that email exists, a reset link has been sent.'
+    });
+
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * POST /api/auth/reset-password
+ * Validates the reset token and sets a new password.
+ * The token is marked as used after a successful reset
+ * so it cannot be reused.
+ */
+async function resetPassword(req, res, next) {
+  try {
+    const { token, newPassword } = req.body;
+
+    // Find the token record
+    const resetToken = await prisma.passwordResetToken.findUnique({
+      where: { token },
+      include: { user: true }
+    });
+
+    // Validate: token must exist, not be used, and not be expired
+    if (!resetToken) {
+      return res.status(400).json({
+        error: true,
+        message: 'Invalid or expired reset link. Please request a new one.',
+        code: 'INVALID_TOKEN'
+      });
+    }
+
+    if (resetToken.used) {
+      return res.status(400).json({
+        error: true,
+        message: 'This reset link has already been used. Please request a new one.',
+        code: 'TOKEN_USED'
+      });
+    }
+
+    if (new Date() > resetToken.expires_at) {
+      return res.status(400).json({
+        error: true,
+        message: 'This reset link has expired. Please request a new one.',
+        code: 'TOKEN_EXPIRED'
+      });
+    }
+
+    // Hash the new password
+    const password_hash = await bcrypt.hash(newPassword, 12);
+
+    // Update password and clear must_change_password flag
+    // Do both in a transaction so they succeed or fail together
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: resetToken.user_id },
+        data: {
+          password_hash,
+          must_change_password: false,
+        }
+      }),
+      prisma.passwordResetToken.update({
+        where: { id: resetToken.id },
+        data: { used: true }
+      }),
+    ]);
+
+    res.json({ message: 'Password reset successfully. You can now log in.' });
+
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { register, login, forgotPassword, resetPassword };
