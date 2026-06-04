@@ -1,8 +1,13 @@
-// LoginPage.jsx — Manager login for the dashboard
+// LoginPage.jsx — Manager login
+//
+// Updated with orange/navy theme.
+// Redirects to dashboard on success.
+
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { setAuth } from '../auth'
+import { saveAuth } from '../auth'
+import { colors, shadows, radius, typography, spacing } from '../theme'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL
 
@@ -10,8 +15,8 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -19,20 +24,23 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const response = await axios.post(`${API_BASE}/auth/login`, {
+      const { data } = await axios.post(`${API_BASE}/auth/login`, {
         email,
         password,
       })
 
-      const { token, user, business } = response.data
-
-      if (user.role !== 'MANAGER') {
+      if (data.user.role !== 'MANAGER') {
         setError('This dashboard is for managers only. Use the mobile app instead.')
         return
       }
 
-      setAuth(token, user, business)
-      navigate('/dashboard')
+      saveAuth(data.token, data.user, data.business)
+
+      if (data.must_change_password) {
+        navigate('/change-password')
+      } else {
+        navigate('/dashboard')
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password')
     } finally {
@@ -43,17 +51,16 @@ export default function LoginPage() {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
+
         {/* Logo */}
         <div style={styles.logo}>
-          <div style={styles.logoIcon}>🚚</div>
+          <span style={styles.logoIcon}>🚚</span>
           <h1 style={styles.logoText}>mydrop</h1>
           <p style={styles.logoSub}>Management Dashboard</p>
         </div>
 
         {/* Error */}
-        {error && (
-          <div style={styles.error}>{error}</div>
-        )}
+        {error && <div style={styles.error}>{error}</div>}
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
@@ -62,7 +69,7 @@ export default function LoginPage() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               style={styles.input}
               placeholder="you@business.com"
               required
@@ -74,21 +81,16 @@ export default function LoginPage() {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               style={styles.input}
               placeholder="••••••••"
               required
             />
-          </div>
-
-          {/* Forgot password link */}
-          <div style={{ textAlign: 'right', marginTop: -8, marginBottom: 16 }}>
-            <Link
-              to="/forgot-password"
-              style={{ color: '#1A73E8', fontSize: 13, textDecoration: 'none' }}
-            >
-              Forgot password?
-            </Link>
+            <div style={{ textAlign: 'right', marginTop: 6 }}>
+              <Link to="/forgot-password" style={styles.forgotLink}>
+                Forgot password?
+              </Link>
+            </div>
           </div>
 
           <button
@@ -102,10 +104,11 @@ export default function LoginPage() {
 
         <p style={styles.signupLink}>
           New business?{' '}
-          <Link to="/signup" style={{ color: '#1A73E8' }}>
+          <Link to="/signup" style={{ color: colors.primary }}>
             Create an account
           </Link>
         </p>
+
       </div>
     </div>
   )
@@ -117,80 +120,84 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: '#F8F9FA',
-    padding: 24,
+    background: colors.background,
+    padding: spacing.lg,
   },
   card: {
-    background: 'white',
-    borderRadius: 16,
+    background: colors.surface,
+    borderRadius: radius.xl,
     padding: 40,
     width: '100%',
     maxWidth: 400,
-    boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+    boxShadow: shadows.xl,
+    border: `1px solid ${colors.border}`,
   },
   logo: {
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
-  logoIcon: {
-    fontSize: 48,
-    marginBottom: 8,
-  },
+  logoIcon: { fontSize: 48 },
   logoText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1A73E8',
-    margin: 0,
+    fontSize: typography.xxxl,
+    fontWeight: typography.bold,
+    color: colors.primary,
+    margin: '4px 0 0',
   },
   logoSub: {
-    color: '#5F6368',
-    fontSize: 14,
-    marginTop: 4,
+    color: colors.textSecondary,
+    fontSize: typography.sm,
+    margin: 4,
   },
   error: {
-    background: '#FFF5F5',
-    border: '1px solid #FECACA',
-    color: '#EA4335',
+    background: colors.errorLight,
+    border: `1px solid ${colors.error}40`,
+    color: colors.error,
     padding: '12px 16px',
-    borderRadius: 8,
-    fontSize: 14,
-    marginBottom: 16,
+    borderRadius: radius.md,
+    fontSize: typography.sm,
+    marginBottom: spacing.md,
   },
-  field: {
-    marginBottom: 16,
-  },
+  field: { marginBottom: spacing.md },
   label: {
     display: 'block',
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#374151',
+    fontSize: typography.sm,
+    fontWeight: typography.medium,
+    color: colors.text,
     marginBottom: 6,
   },
   input: {
     width: '100%',
     padding: '10px 14px',
-    border: '1px solid #D1D5DB',
-    borderRadius: 8,
-    fontSize: 14,
+    border: `1px solid ${colors.border}`,
+    borderRadius: radius.md,
+    fontSize: typography.base,
     outline: 'none',
     boxSizing: 'border-box',
+    color: colors.text,
+    background: colors.surface,
+  },
+  forgotLink: {
+    color: colors.primary,
+    fontSize: typography.xs,
+    textDecoration: 'none',
   },
   button: {
     width: '100%',
     padding: '12px',
-    background: '#1A73E8',
+    background: colors.primary,
     color: 'white',
     border: 'none',
-    borderRadius: 8,
-    fontSize: 15,
-    fontWeight: '600',
+    borderRadius: radius.md,
+    fontSize: typography.md,
+    fontWeight: typography.semibold,
     cursor: 'pointer',
     marginTop: 8,
+    boxShadow: shadows.sm,
   },
   signupLink: {
     textAlign: 'center',
-    marginTop: 24,
-    fontSize: 14,
-    color: '#5F6368',
+    marginTop: spacing.lg,
+    fontSize: typography.sm,
+    color: colors.textSecondary,
   },
 }

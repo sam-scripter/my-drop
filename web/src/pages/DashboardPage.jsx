@@ -1,35 +1,27 @@
-// DashboardPage.jsx — Main dispatch overview
-import { useEffect, useState } from 'react'
+// DashboardPage.jsx — Main dashboard / Command Center
+//
+// Shows today's analytics summary and recent orders.
+// Uses the new orange/navy theme via theme.js tokens.
+
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getBusiness, getUser } from '../auth'
-import api from '../api'
 import DashboardLayout from '../components/DashboardLayout'
 import OnboardingWizard from '../components/OnboardingWizard'
-
-const STATUS_COLORS = {
-  PENDING: '#9AA0A6',
-  ASSIGNED: '#FBBC04',
-  PICKED_UP: '#FF6D00',
-  IN_TRANSIT: '#1A73E8',
-  DELIVERED: '#34A853',
-  FAILED: '#EA4335',
-}
+import api from '../api'
+import { colors, shadows, radius, typography, spacing, getStatusColor, getStatusLabel } from '../theme'
+import { getUser, getBusiness } from '../auth'
 
 export default function DashboardPage() {
-  const business = getBusiness()
   const user = getUser()
-  const [analytics, setAnalytics] = useState(null)
+  const business = getBusiness()
+  const [summary, setSummary] = useState(null)
   const [recentOrders, setRecentOrders] = useState([])
   const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  // Show onboarding wizard if this is a new user (not dismissed before)
   const [showOnboarding, setShowOnboarding] = useState(
     () => localStorage.getItem('mydrop_onboarding_done') !== 'true'
   )
+
+  useEffect(() => { loadData() }, [])
 
   async function loadData() {
     setLoading(true)
@@ -38,32 +30,66 @@ export default function DashboardPage() {
         api.get('/analytics/today'),
         api.get('/orders?limit=5'),
       ])
-      setAnalytics(analyticsRes.data.summary)
+      setSummary(analyticsRes.data.summary)
       setRecentOrders(ordersRes.data.orders)
     } catch (err) {
-      console.error('Failed to load dashboard data:', err)
+      console.error('Failed to load dashboard:', err)
     } finally {
       setLoading(false)
     }
   }
 
   const hour = new Date().getHours()
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+  const greeting = hour < 12
+    ? 'Good morning'
+    : hour < 17
+    ? 'Good afternoon'
+    : 'Good evening'
+
+  const STAT_CARDS = [
+    {
+      label: 'Orders Today',
+      value: summary?.orders_created ?? 0,
+      icon: '📦',
+      color: colors.primary,
+    },
+    {
+      label: 'Delivered',
+      value: summary?.delivered ?? 0,
+      icon: '✅',
+      color: colors.success,
+    },
+    {
+      label: 'Failed',
+      value: summary?.failed ?? 0,
+      icon: '❌',
+      color: colors.error,
+    },
+    {
+      label: 'Avg Delivery Time',
+      value: summary?.avg_delivery_minutes
+        ? `${summary.avg_delivery_minutes}m`
+        : '--',
+      icon: '⏱',
+      color: colors.warning,
+    },
+  ]
 
   return (
     <DashboardLayout>
-      {/* Onboarding wizard — shown only on first visit */}
       {showOnboarding && (
         <OnboardingWizard onDismiss={() => setShowOnboarding(false)} />
       )}
+
       <div style={styles.page}>
-        {/* Header */}
-        <div style={styles.header}>
+
+        {/* ── Page header ───────────────────────────────────────────── */}
+        <div style={styles.pageHeader}>
           <div>
-            <h1 style={styles.title}>
+            <h1 style={styles.pageTitle}>
               {greeting}, {user?.name?.split(' ')[0]} 👋
             </h1>
-            <p style={styles.subtitle}>
+            <p style={styles.pageSubtitle}>
               {business?.name} · Here's what's happening today
             </p>
           </div>
@@ -72,41 +98,29 @@ export default function DashboardPage() {
           </Link>
         </div>
 
+        {/* ── Stat cards ────────────────────────────────────────────── */}
         {loading ? (
           <div style={styles.loading}>Loading...</div>
         ) : (
           <>
-            {/* Summary cards */}
-            <div style={styles.cards}>
-              <SummaryCard
-                label="Orders Today"
-                value={analytics?.orders_created ?? 0}
-                icon="📦"
-                color="#1A73E8"
-              />
-              <SummaryCard
-                label="Delivered"
-                value={analytics?.delivered ?? 0}
-                icon="✅"
-                color="#34A853"
-              />
-              <SummaryCard
-                label="Failed"
-                value={analytics?.failed ?? 0}
-                icon="❌"
-                color="#EA4335"
-              />
-              <SummaryCard
-                label="Avg Delivery Time"
-                value={analytics?.avg_delivery_minutes
-                  ? `${analytics.avg_delivery_minutes}m`
-                  : '--'}
-                icon="⏱️"
-                color="#FBBC04"
-              />
+            <div style={styles.statsGrid}>
+              {STAT_CARDS.map((card, i) => (
+                <div key={i} style={styles.statCard}>
+                  <div style={{
+                    ...styles.statIconWrapper,
+                    background: card.color + '18',
+                  }}>
+                    <span style={styles.statIcon}>{card.icon}</span>
+                  </div>
+                  <div style={{ ...styles.statValue, color: card.color }}>
+                    {card.value}
+                  </div>
+                  <div style={styles.statLabel}>{card.label}</div>
+                </div>
+              ))}
             </div>
 
-            {/* Recent orders */}
+            {/* ── Recent orders ──────────────────────────────────────── */}
             <div style={styles.section}>
               <div style={styles.sectionHeader}>
                 <h2 style={styles.sectionTitle}>Recent Orders</h2>
@@ -115,9 +129,9 @@ export default function DashboardPage() {
 
               {recentOrders.length === 0 ? (
                 <div style={styles.empty}>
-                  <p>No orders yet today.</p>
+                  <p style={styles.emptyText}>No orders yet today.</p>
                   <Link to="/orders/new" style={styles.emptyLink}>
-                    Create your first order
+                    Create your first order →
                   </Link>
                 </div>
               ) : (
@@ -129,7 +143,7 @@ export default function DashboardPage() {
                     <span>Rider</span>
                     <span>Actions</span>
                   </div>
-                  {recentOrders.map((order) => (
+                  {recentOrders.map(order => (
                     <OrderRow key={order.id} order={order} />
                   ))}
                 </div>
@@ -142,21 +156,9 @@ export default function DashboardPage() {
   )
 }
 
-function SummaryCard({ label, value, icon, color }) {
-  return (
-    <div style={styles.card}>
-      <div style={{ ...styles.cardIcon, background: color + '18' }}>
-        <span style={{ fontSize: 24 }}>{icon}</span>
-      </div>
-      <div style={{ ...styles.cardValue, color }}>{value}</div>
-      <div style={styles.cardLabel}>{label}</div>
-    </div>
-  )
-}
-
 function OrderRow({ order }) {
-  const status = order.status
-  const color = STATUS_COLORS[status] || '#9AA0A6'
+  const statusColor = getStatusColor(order.status)
+  const statusLabel = getStatusLabel(order.status)
 
   return (
     <div style={styles.tableRow}>
@@ -164,13 +166,17 @@ function OrderRow({ order }) {
         <div style={styles.customerName}>{order.customer_name}</div>
         <div style={styles.customerPhone}>{order.customer_phone}</div>
       </div>
-      <div style={styles.address}>{order.customer_address}</div>
+      <div style={styles.cellMuted}>{order.customer_address}</div>
       <div>
-        <span style={{ ...styles.badge, background: color + '20', color }}>
-          {status.replace('_', ' ')}
+        <span style={{
+          ...styles.badge,
+          background: statusColor + '18',
+          color: statusColor,
+        }}>
+          {statusLabel}
         </span>
       </div>
-      <div style={styles.riderName}>
+      <div style={styles.cellMuted}>
         {order.delivery?.rider?.name || '—'}
       </div>
       <div>
@@ -189,116 +195,123 @@ function OrderRow({ order }) {
 
 const styles = {
   page: {
-    padding: 32,
-    marginLeft: 240,
-    minHeight: '100vh',
-    background: '#F8F9FA',
+    padding: spacing.xl,
+    maxWidth: 1200,
   },
-  header: {
+  pageHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  pageTitle: {
+    fontSize: typography.xxl,
+    fontWeight: typography.bold,
+    color: colors.text,
     margin: '0 0 4px',
   },
-  subtitle: {
-    color: '#5F6368',
+  pageSubtitle: {
+    fontSize: typography.base,
+    color: colors.textSecondary,
     margin: 0,
-    fontSize: 14,
   },
   newOrderBtn: {
-    background: '#1A73E8',
+    background: colors.primary,
     color: 'white',
     padding: '10px 20px',
-    borderRadius: 8,
+    borderRadius: radius.md,
     textDecoration: 'none',
-    fontWeight: '600',
-    fontSize: 14,
+    fontWeight: typography.semibold,
+    fontSize: typography.base,
+    boxShadow: shadows.sm,
   },
   loading: {
     textAlign: 'center',
-    padding: 48,
-    color: '#5F6368',
+    padding: spacing.xxl,
+    color: colors.textSecondary,
   },
-  cards: {
+  statsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: 16,
-    marginBottom: 32,
+    gap: spacing.md,
+    marginBottom: spacing.xl,
   },
-  card: {
-    background: 'white',
-    borderRadius: 12,
-    padding: 20,
-    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+  statCard: {
+    background: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    boxShadow: shadows.sm,
+    border: `1px solid ${colors.border}`,
   },
-  cardIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+  statIconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.sm,
   },
-  cardValue: {
-    fontSize: 32,
-    fontWeight: 'bold',
+  statIcon: { fontSize: 22 },
+  statValue: {
+    fontSize: 36,
+    fontWeight: typography.bold,
     lineHeight: 1,
     marginBottom: 4,
   },
-  cardLabel: {
-    color: '#5F6368',
-    fontSize: 13,
+  statLabel: {
+    fontSize: typography.sm,
+    color: colors.textSecondary,
   },
   section: {
-    background: 'white',
-    borderRadius: 12,
-    padding: 24,
-    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+    background: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    boxShadow: shadows.sm,
+    border: `1px solid ${colors.border}`,
   },
   sectionHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: typography.lg,
+    fontWeight: typography.semibold,
+    color: colors.text,
     margin: 0,
   },
   seeAll: {
-    color: '#1A73E8',
+    color: colors.primary,
     textDecoration: 'none',
-    fontSize: 14,
+    fontSize: typography.sm,
+    fontWeight: typography.medium,
   },
   empty: {
     textAlign: 'center',
-    padding: '32px 0',
-    color: '#5F6368',
+    padding: `${spacing.xxl}px 0`,
+  },
+  emptyText: {
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
   },
   emptyLink: {
-    color: '#1A73E8',
+    color: colors.primary,
     textDecoration: 'none',
+    fontWeight: typography.medium,
   },
-  table: {
-    width: '100%',
-  },
+  table: { width: '100%' },
   tableHeader: {
     display: 'grid',
     gridTemplateColumns: '1.5fr 2fr 1fr 1fr 0.5fr',
     padding: '8px 12px',
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#5F6368',
+    fontSize: typography.xs,
+    fontWeight: typography.semibold,
+    color: colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
-    borderBottom: '1px solid #E8EAED',
+    borderBottom: `1px solid ${colors.border}`,
     marginBottom: 4,
   },
   tableRow: {
@@ -306,36 +319,34 @@ const styles = {
     gridTemplateColumns: '1.5fr 2fr 1fr 1fr 0.5fr',
     padding: '12px',
     alignItems: 'center',
-    borderBottom: '1px solid #F1F3F4',
-    fontSize: 14,
+    borderBottom: `1px solid ${colors.border}`,
+    fontSize: typography.base,
   },
   customerName: {
-    fontWeight: '500',
+    fontWeight: typography.medium,
+    color: colors.text,
   },
   customerPhone: {
-    color: '#5F6368',
-    fontSize: 12,
+    fontSize: typography.xs,
+    color: colors.textMuted,
   },
-  address: {
-    color: '#5F6368',
-    fontSize: 13,
+  cellMuted: {
+    color: colors.textSecondary,
+    fontSize: typography.sm,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
   },
   badge: {
-    padding: '3px 8px',
-    borderRadius: 20,
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  riderName: {
-    color: '#5F6368',
-    fontSize: 13,
+    padding: '3px 10px',
+    borderRadius: radius.full,
+    fontSize: typography.xs,
+    fontWeight: typography.semibold,
   },
   trackLink: {
-    color: '#1A73E8',
+    color: colors.primary,
     textDecoration: 'none',
-    fontSize: 13,
+    fontSize: typography.sm,
+    fontWeight: typography.medium,
   },
 }
