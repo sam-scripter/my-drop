@@ -39,6 +39,8 @@ app.use((req, res, next) => {
 
 app.use('/api/subscription', require('./src/routes/subscription.routes'));
 
+app.use('/api/contact', require('./src/routes/contact.routes'));
+
 // ── Rate limiting ───────────────────────────────────────────────────────
 // Limits how many requests one IP can make — prevents abuse
 

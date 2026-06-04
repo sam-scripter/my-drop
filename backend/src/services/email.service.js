@@ -305,6 +305,7 @@ async function sendTrialExpiryWarning(business, manager, daysRemaining) {
 }
 
 module.exports = {
+  sendEmail, 
   sendWelcomeEmail,
   sendRiderCredentials,
   sendPasswordResetEmail,
