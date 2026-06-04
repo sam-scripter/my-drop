@@ -6,6 +6,7 @@
 const bcrypt = require('bcryptjs');
 const prisma = require('../utils/prisma');
 const { signToken } = require('../utils/jwt');
+const { sendWelcomeEmail } = require('../services/email.service');
 
 /**
  * POST /api/auth/register
@@ -88,6 +89,11 @@ async function register(req, res, next) {
         name: result.business.name,
       }
     });
+
+    sendWelcomeEmail(
+      { name: result.business.name },
+      { name: result.user.name, email: result.user.email }
+    ).catch(err => console.error('Welcome email failed:', err.message));
 
   } catch (err) {
     next(err); // passes to global error handler
