@@ -16,7 +16,7 @@ import useWindowSize from '../hooks/useWindowSize'
 
 const NAV_ITEMS = [
   { path: '/dashboard', label: 'Dashboard', icon: '⊞', end: true },
-  { path: '/orders', label: 'Orders', icon: '📦', end: false },
+  { path: '/orders', label: 'Orders', icon: '📦', end: true },
   { path: '/orders/new', label: 'New Order', icon: '+', end: true },
   { path: '/riders', label: 'Riders', icon: '🏍', end: true },
   { path: '/reports', label: 'Reports', icon: '📊', end: true },
