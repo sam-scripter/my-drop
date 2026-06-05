@@ -41,7 +41,7 @@ const TIERS = [
     monthlyPrice: 1500,
     annualPrice: 15000,
     description: 'For small businesses doing daily deliveries',
-    color: '#1A73E8',
+    color: '#F97316',
     features: [
       'Up to 200 orders per month',
       'Up to 5 rider accounts',
@@ -82,7 +82,7 @@ const TIERS = [
     monthlyPrice: 10000,
     annualPrice: 100000,
     description: 'For courier companies and multi-branch businesses',
-    color: '#9C27B0',
+    color: '#1E293B',
     features: [
       'Unlimited orders',
       'Unlimited rider accounts',
@@ -146,7 +146,7 @@ export default function PricingPage() {
         <div style={styles.toggle}>
           <span style={{
             ...styles.toggleLabel,
-            color: !isAnnual ? '#1A73E8' : '#5F6368',
+            color: !isAnnual ? '#F97316' : '#5F6368',
             fontWeight: !isAnnual ? '600' : '400',
           }}>
             Monthly
@@ -162,7 +162,7 @@ export default function PricingPage() {
           </button>
           <span style={{
             ...styles.toggleLabel,
-            color: isAnnual ? '#1A73E8' : '#5F6368',
+            color: isAnnual ? '#F97316' : '#5F6368',
             fontWeight: isAnnual ? '600' : '400',
           }}>
             Annual
@@ -386,7 +386,7 @@ const styles = {
   logo: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#1A73E8',
+    color: '#F97316',
     textDecoration: 'none',
   },
   headerLinks: {
@@ -400,7 +400,7 @@ const styles = {
     fontSize: 14,
   },
   signupLink: {
-    background: '#1A73E8',
+    background: '#F97316',
     color: 'white',
     padding: '8px 20px',
     borderRadius: 8,
@@ -439,7 +439,7 @@ const styles = {
   toggleButton: {
     width: 44,
     height: 24,
-    background: '#1A73E8',
+    background: '#F97316',
     borderRadius: 12,
     border: 'none',
     cursor: 'pointer',
@@ -634,7 +634,7 @@ const styles = {
   bottomCta: {
     textAlign: 'center',
     padding: '64px 24px',
-    background: '#1A73E8',
+    background: '#1E293B',
     color: 'white',
   },
   bottomCtaTitle: {
@@ -651,7 +651,7 @@ const styles = {
   bottomCtaButton: {
     display: 'inline-block',
     background: 'white',
-    color: '#1A73E8',
+    color: '#F97316',
     padding: '14px 32px',
     borderRadius: 8,
     textDecoration: 'none',
