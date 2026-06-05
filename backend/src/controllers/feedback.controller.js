@@ -36,7 +36,7 @@ async function getFeedback(req, res, next) {
           select: { name: true },
         },
       },
-      orderBy: { updated_at: 'desc' },
+      orderBy: { created_at: 'desc' },
     });
 
     // Build feedback list
@@ -46,7 +46,7 @@ async function getFeedback(req, res, next) {
       customer_address: d.order.customer_address,
       rider_name: d.rider?.name || null,
       rating: d.rating,
-      rated_at: d.updated_at,
+      rated_at: d.created_at,
     }));
 
     // Calculate summary stats
