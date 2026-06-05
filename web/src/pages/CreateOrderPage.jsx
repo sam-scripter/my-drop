@@ -20,6 +20,9 @@ export default function CreateOrderPage() {
     customer_address: '',
     items_description: '',
     notes: '',
+    order_value: '',
+    delivery_fee: '',
+    payment_method: '',
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -39,6 +42,8 @@ export default function CreateOrderPage() {
     try {
       const res = await api.post('/orders', {
         ...form,
+        order_value: form.order_value ? parseFloat(form.order_value) : null,
+        delivery_fee: form.delivery_fee ? parseFloat(form.delivery_fee) : null,
         delivery_lat: addressLatLng?.lat || null,
         delivery_lng: addressLatLng?.lng || null,
       })
@@ -181,6 +186,53 @@ export default function CreateOrderPage() {
                 style={{ ...styles.input, height: 60, resize: 'vertical' }}
                 placeholder="e.g. Call on arrival, gate code: 1234"
               />
+            </div>
+
+            <div style={styles.sectionLabel}>Payment details (optional)</div>
+
+            <div style={styles.row}>
+              <div style={styles.field}>
+                <label style={styles.label}>Order value (KES)</label>
+                <input
+                  name="order_value"
+                  type="number"
+                  value={form.order_value}
+                  onChange={handleChange}
+                  style={styles.input}
+                  placeholder="e.g. 2500"
+                  min="0"
+                />
+                <p style={styles.fieldHint}>
+                  Total value of goods being delivered
+                </p>
+              </div>
+              <div style={styles.field}>
+                <label style={styles.label}>Delivery fee (KES)</label>
+                <input
+                  name="delivery_fee"
+                  type="number"
+                  value={form.delivery_fee}
+                  onChange={handleChange}
+                  style={styles.input}
+                  placeholder="e.g. 200"
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <div style={styles.field}>
+              <label style={styles.label}>Payment method</label>
+              <select
+                name="payment_method"
+                value={form.payment_method}
+                onChange={handleChange}
+                style={styles.input}
+              >
+                <option value="">Select payment method</option>
+                <option value="cash">Cash on delivery</option>
+                <option value="mpesa">M-Pesa</option>
+                <option value="prepaid">Prepaid</option>
+              </select>
             </div>
 
             <div style={styles.formActions}>

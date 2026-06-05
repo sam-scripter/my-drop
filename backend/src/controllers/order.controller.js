@@ -18,6 +18,9 @@ async function createOrder(req, res, next) {
       notes,
       delivery_lat,
       delivery_lng,
+      order_value,     // ← add
+      delivery_fee,    // ← add
+      payment_method,  
       source,
       source_ref,
     } = req.body;
@@ -44,6 +47,10 @@ async function createOrder(req, res, next) {
         notes,
         delivery_lat: delivery_lat || null,
         delivery_lng: delivery_lng || null,
+        order_value: order_value || null,
+        delivery_fee: delivery_fee || null,
+        payment_method: payment_method || null,
+        payment_status: order_value ? 'pending' : null,
         source: source || 'manual',
         source_ref,
         tracking_token,

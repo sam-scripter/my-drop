@@ -12,7 +12,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants.dart';
+import '../../core/theme.dart';
 import '../../providers/auth.provider.dart';
 import '../../services/api.service.dart';
 import '../../services/location.service.dart';
@@ -234,6 +236,43 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen> {
     );
   }
 
+// _openNavigation — opens Google Maps with the delivery address
+// as the destination. The rider uses native Maps for turn-by-turn
+// navigation while mydrop continues streaming GPS in the background.
+  Future<void> _openNavigation() async {
+    final address = widget.order['customer_address'] as String;
+    final lat = widget.order['delivery_lat'] as double?;
+    final lng = widget.order['delivery_lng'] as double?;
+
+    Uri mapsUri;
+
+    if (lat != null && lng != null) {
+      // Use coordinates if available — more accurate
+      mapsUri = Uri.parse('https://www.google.com/maps/dir/?api=1'
+          '&destination=$lat,$lng'
+          '&travelmode=driving');
+    } else {
+      // Fall back to address string
+      final encoded = Uri.encodeComponent(address);
+      mapsUri = Uri.parse('https://www.google.com/maps/dir/?api=1'
+          '&destination=$encoded'
+          '&travelmode=driving');
+    }
+
+    if (await canLaunchUrl(mapsUri)) {
+      await launchUrl(mapsUri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not open Google Maps'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final order = widget.order;
@@ -408,6 +447,22 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen> {
                   else
                     _buildActionButton(),
 
+                  // Navigate button — opens Google Maps with the delivery address
+                  // Rider uses native Maps for navigation while GPS streams in background
+                  ElevatedButton.icon(
+                    onPressed: _openNavigation,
+                    icon: const Icon(Icons.navigation_rounded),
+                    label: const Text('Navigate with Maps'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.navy,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 48),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+
                   const SizedBox(height: 8),
                 ],
               ),
@@ -454,17 +509,16 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFF34A853).withOpacity(0.1),
+                color: const Color(0xFF34A853).withValues(alpha:0.1),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: const Color(0xFF34A853).withOpacity(0.3),
+                  color: const Color(0xFF34A853).withValues(alpha:0.3),
                 ),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.gps_fixed,
-                      size: 14, color: Color(0xFF34A853)),
+                  Icon(Icons.gps_fixed, size: 14, color: Color(0xFF34A853)),
                   SizedBox(width: 4),
                   Text(
                     'Live location sharing active',
@@ -522,7 +576,7 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha:0.15),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(

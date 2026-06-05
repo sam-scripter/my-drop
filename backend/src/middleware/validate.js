@@ -105,6 +105,9 @@ const schemas = {
     delivery_lat: zod.number().optional().nullable(),   // ← add
     delivery_lng: zod.number().optional().nullable(), 
     source: zod.enum(['manual', 'whatsapp', 'api', 'pos']).default('manual'),
+    order_value: zod.number().optional().nullable(),        // ← add
+    delivery_fee: zod.number().optional().nullable(),       // ← add
+    payment_method: zod.enum(['cash', 'mpesa', 'prepaid']).optional(), // ← add
     source_ref: zod.string().optional(),
   }),
 

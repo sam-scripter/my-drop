@@ -17,6 +17,7 @@ import LandingPage from './pages/LandingPage'
 import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
 import ContactPage from './pages/ContactPage'
+import ReportsPage from './pages/ReportsPage'
 
 export default function App() {
   return (
@@ -61,6 +62,8 @@ export default function App() {
 
       {/* Public contact page */}
       <Route path="/contact" element={<ContactPage />} />
+
+      <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
 
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/terms" element={<TermsPage />} />
