@@ -91,7 +91,7 @@ const TESTIMONIALS = [
     quote:
       'Before mydrop, my phone never stopped ringing with "where is my food?" calls. Now customers track their order themselves. My riders love it too.',
     avatar: 'JW',
-    color: '#1A73E8',
+    color: '#F97316',
   },
   {
     name: 'Brian Ochieng',
@@ -239,7 +239,7 @@ export default function LandingPage() {
                 </div>
                 <div style={styles.mockupCards}>
                   {[
-                    { label: 'Orders Today', value: '24', color: '#1A73E8' },
+                    { label: 'Orders Today', value: '24', color: '#F97316' },
                     { label: 'Delivered', value: '18', color: '#34A853' },
                     { label: 'In Transit', value: '6', color: '#F97316' },
                     { label: 'Avg Time', value: '28m', color: '#FBBC04' },
@@ -254,7 +254,7 @@ export default function LandingPage() {
                 </div>
                 <div style={styles.mockupTableHeader}>Recent Orders</div>
                 {[
-                  { name: 'Alice Kamau', status: 'In Transit', color: '#1A73E8' },
+                  { name: 'Alice Kamau', status: 'In Transit', color: '#F97316' },
                   { name: 'Brian Otieno', status: 'Delivered', color: '#34A853' },
                   { name: 'Carol Mwangi', status: 'Pending', color: '#9AA0A6' },
                 ].map(row => (
@@ -396,11 +396,11 @@ export default function LandingPage() {
                         <div key={i} style={styles.trackingStep}>
                           <div style={{
                             ...styles.trackingDot,
-                            background: i <= 3 ? '#1A73E8' : '#E8EAED',
+                            background: i <= 3 ? '#F97316' : '#E8EAED',
                           }} />
                           <span style={{
                             ...styles.trackingStepLabel,
-                            color: i === 3 ? '#1A73E8' : i < 3 ? '#34A853' : '#9AA0A6',
+                            color: i === 3 ? '#F97316' : i < 3 ? '#34A853' : '#9AA0A6',
                             fontWeight: i === 3 ? '600' : '400',
                           }}>
                             {step}
@@ -516,8 +516,8 @@ export default function LandingPage() {
                   to={plan.link}
                   style={{
                     ...styles.pricingCardCta,
-                    background: plan.highlight ? '#1A73E8' : 'white',
-                    color: plan.highlight ? 'white' : '#1A73E8',
+                    background: plan.highlight ? '#F97316' : 'white',
+                    color: plan.highlight ? 'white' : '#F97316',
                   }}
                 >
                   {plan.cta}
@@ -670,7 +670,7 @@ const styles = {
   logoText: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#1A73E8',
+    color: '#F97316',
   },
   nav: {
     display: 'flex',
@@ -684,7 +684,7 @@ const styles = {
     fontWeight: '500',
   },
   navCta: {
-    background: '#1A73E8',
+    background: '#F97316',
     color: 'white',
     padding: '10px 20px',
     borderRadius: 8,
@@ -705,8 +705,8 @@ const styles = {
   },
   heroBadge: {
     display: 'inline-block',
-    background: '#E8F0FE',
-    color: '#1A73E8',
+    background: '#FFF7ED',
+    color: '#F97316',
     padding: '6px 16px',
     borderRadius: 20,
     fontSize: 13,
@@ -721,7 +721,7 @@ const styles = {
     color: '#202124',
   },
   heroTitleAccent: {
-    color: '#1A73E8',
+    color: '#F97316',
   },
   heroSubtitle: {
     fontSize: 20,
@@ -739,7 +739,7 @@ const styles = {
     marginBottom: 16,
   },
   heroPrimary: {
-    background: '#1A73E8',
+    background: '#F97316',
     color: 'white',
     padding: '16px 32px',
     borderRadius: 10,
@@ -748,7 +748,7 @@ const styles = {
     fontWeight: '700',
   },
   heroSecondary: {
-    color: '#1A73E8',
+    color: '#F97316',
     textDecoration: 'none',
     fontSize: 15,
     fontWeight: '500',
@@ -794,7 +794,7 @@ const styles = {
   },
   mockupSidebar: {
     width: 160,
-    background: '#1A73E8',
+    background: '#1E293B',
     padding: '16px 0',
     flexShrink: 0,
   },
@@ -865,7 +865,7 @@ const styles = {
 
   // Stats
   statsBar: {
-    background: '#1A73E8',
+    background: '#1E293B',
     padding: '32px 24px',
     display: 'flex',
     justifyContent: 'center',
@@ -923,13 +923,13 @@ const styles = {
   problemSolution: {
     textAlign: 'center',
     padding: '24px',
-    background: '#E8F0FE',
+    background: '#FFF7ED',
     borderRadius: 12,
   },
   problemSolutionText: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1A73E8',
+    color: '#F97316',
     margin: 0,
   },
 
@@ -938,7 +938,7 @@ const styles = {
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: '1px',
-    color: '#1A73E8',
+    color: '#F97316',
     textAlign: 'center',
     marginBottom: 12,
   },
@@ -979,7 +979,7 @@ const styles = {
   stepNumber: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#E8F0FE',
+    color: '#FFF7ED',
     lineHeight: 1,
     marginBottom: 8,
   },
@@ -1002,7 +1002,7 @@ const styles = {
     top: '50%',
     transform: 'translateY(-50%)',
     fontSize: 24,
-    color: '#1A73E8',
+    color: '#F97316',
     fontWeight: 'bold',
   },
 
@@ -1127,14 +1127,14 @@ const styles = {
   pinDigit: {
     width: 28,
     height: 32,
-    background: '#E8F0FE',
+    background: '#FFF7ED',
     borderRadius: 4,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1A73E8',
+    color: '#F97316',
   },
   demoFeatures: {
     display: 'flex',
@@ -1211,7 +1211,7 @@ const styles = {
     border: '2px solid #1A73E8',
   },
   seePricing: {
-    color: '#1A73E8',
+    color: '#F97316',
     textDecoration: 'none',
     fontSize: 14,
     fontWeight: '500',
@@ -1274,7 +1274,7 @@ const styles = {
 
   // Final CTA
   finalCta: {
-    background: '#1A73E8',
+    background: '#1E293B',
     padding: '80px 24px',
     textAlign: 'center',
   },
@@ -1295,7 +1295,7 @@ const styles = {
   finalCtaButton: {
     display: 'inline-block',
     background: 'white',
-    color: '#1A73E8',
+    color: '#F97316',
     padding: '16px 40px',
     borderRadius: 10,
     textDecoration: 'none',
@@ -1311,7 +1311,7 @@ const styles = {
 
   // Footer
   footer: {
-    background: '#202124',
+    background: '#1E293B',
     padding: '48px 32px 0',
     color: 'white',
   },
