@@ -27,3 +27,77 @@ html, body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* index.css — Global styles and responsive utilities */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Responsive table → card list on mobile */
+@media (max-width: 768px) {
+  /* Dashboard stat cards — 2 columns on mobile */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Hide table headers on mobile */
+  .table-header {
+    display: none !important;
+  }
+
+  /* Stack table rows as cards on mobile */
+  .table-row {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 16px !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    gap: 4px;
+  }
+
+  /* Full width forms on mobile */
+  .form-row {
+    flex-direction: column !important;
+  }
+
+  /* Pricing cards stack on mobile */
+  .pricing-cards {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Hide non-essential columns on mobile */
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Spinner animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Pulse animation for live indicator */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Smooth page transitions */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}

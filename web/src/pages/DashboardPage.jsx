@@ -231,11 +231,11 @@ const styles = {
     color: colors.textSecondary,
   },
   statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: spacing.md,
-    marginBottom: spacing.xl,
-  },
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+  gap: spacing.md,
+  marginBottom: spacing.xl,
+},
   statCard: {
     background: colors.surface,
     borderRadius: radius.lg,

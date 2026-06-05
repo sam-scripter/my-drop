@@ -134,6 +134,25 @@ export default function LandingPage() {
 
   return (
     <div style={styles.page}>
+      <style>{`
+        @media (max-width: 768px) {
+          .hero-title { font-size: 32px !important; }
+          .hero-actions { flex-direction: column !important; }
+          .stats-bar { gap: 24px !important; }
+          .problem-grid { grid-template-columns: 1fr !important; }
+          .steps-grid { grid-template-columns: 1fr !important; }
+          .business-grid { grid-template-columns: 1fr 1fr !important; }
+          .testimonials-grid { grid-template-columns: 1fr !important; }
+          .pricing-summary { flex-direction: column !important; align-items: center !important; }
+          .demo-content { flex-direction: column !important; align-items: center !important; }
+          .footer-inner { flex-direction: column !important; }
+          .footer-links { flex-direction: column !important; gap: 16px !important; }
+        }
+        @media (max-width: 480px) {
+          .business-grid { grid-template-columns: 1fr !important; }
+          .hero-title { font-size: 28px !important; }
+        }
+      `}</style>
 
       {/* ── 1. Header ─────────────────────────────────────────────── */}
       <header style={{
@@ -163,7 +182,7 @@ export default function LandingPage() {
             🇰🇪 Built for Kenyan businesses
           </div>
 
-          <h1 style={styles.heroTitle}>
+          <h1 className="hero-title" style={styles.heroTitle}>
             Your customers always know<br />
             <span style={styles.heroTitleAccent}>where their order is.</span>
           </h1>
@@ -174,7 +193,7 @@ export default function LandingPage() {
             no confusion. Set up in under 20 minutes.
           </p>
 
-          <div style={styles.heroActions}>
+          <div className="hero-actions" style={styles.heroActions}>
             <Link to="/signup" style={styles.heroPrimary}>
               Start free — no credit card needed
             </Link>
@@ -253,7 +272,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── 3. Stats bar ─────────────────────────────────────────────── */}
-      <section style={styles.statsBar}>
+      <section className="stats-bar" style={styles.statsBar}>
         {STATS.map((stat, i) => (
           <div key={i} style={styles.statItem}>
             <div style={styles.statValue}>{stat.value}</div>
@@ -268,7 +287,7 @@ export default function LandingPage() {
           <h2 style={styles.problemTitle}>
             "Where is my order?" is costing you time, money, and customers.
           </h2>
-          <div style={styles.problemGrid}>
+          <div className="problem-grid" style={styles.problemGrid}>
             <div style={styles.problemItem}>
               <span style={styles.problemIcon}>📞</span>
               <p style={styles.problemText}>
@@ -310,7 +329,7 @@ export default function LandingPage() {
             No complicated setup. No training required. Works on any phone.
           </p>
 
-          <div style={styles.stepsGrid}>
+          <div className="steps-grid" style={styles.stepsGrid}>
             {HOW_IT_WORKS.map((item, i) => (
               <div key={i} style={styles.stepCard}>
                 <div style={styles.stepNumber}>{item.step}</div>
@@ -337,7 +356,7 @@ export default function LandingPage() {
             Whether you do 5 deliveries a day or 500, mydrop scales with you.
           </p>
 
-          <div style={styles.businessGrid}>
+          <div className="business-grid" style={styles.businessGrid}>
             {BUSINESS_TYPES.map((biz, i) => (
               <div key={i} style={styles.businessCard}>
                 <div style={styles.businessIcon}>{biz.icon}</div>
@@ -362,7 +381,7 @@ export default function LandingPage() {
             Just a link — works on any phone, any browser.
           </p>
 
-          <div style={styles.demoContent}>
+          <div className="demo-content" style={styles.demoContent}>
             <div style={styles.demoPhone}>
               <div style={styles.phoneFrame}>
                 <div style={styles.phoneScreen}>
@@ -452,7 +471,7 @@ export default function LandingPage() {
             No credit card required. No contracts. Cancel anytime.
           </p>
 
-          <div style={styles.pricingCards}>
+          <div className="pricing-summary" style={styles.pricingCards}>
             {[
               {
                 name: 'Free',
@@ -523,7 +542,7 @@ export default function LandingPage() {
             Trusted by businesses across Nairobi
           </h2>
 
-          <div style={styles.testimonialsGrid}>
+          <div className="testimonials-grid" style={styles.testimonialsGrid}>
             {TESTIMONIALS.map((t, i) => (
               <div key={i} style={styles.testimonialCard}>
                 <p style={styles.testimonialQuote}>"{t.quote}"</p>
@@ -575,7 +594,7 @@ export default function LandingPage() {
 
       {/* ── 11. Footer ───────────────────────────────────────────────── */}
       <footer style={styles.footer}>
-        <div style={styles.footerInner}>
+        <div className="footer-inner" style={styles.footerInner}>
           <div style={styles.footerBrand}>
             <div style={styles.footerLogo}>🚚 mydrop</div>
             <p style={styles.footerTagline}>
@@ -583,7 +602,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div style={styles.footerLinks}>
+          <div className="footer-links" style={styles.footerLinks}>
             <div style={styles.footerLinkGroup}>
               <div style={styles.footerLinkTitle}>Product</div>
               <Link to="/pricing" style={styles.footerLink}>Pricing</Link>

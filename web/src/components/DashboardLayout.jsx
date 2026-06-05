@@ -1,37 +1,47 @@
-// DashboardLayout.jsx — Main layout wrapper for all dashboard pages
+// DashboardLayout.jsx — Responsive dashboard layout
 //
-// Provides the dark navy sidebar with orange accents and the main
-// content area. All authenticated pages render inside this component.
+// Desktop: fixed sidebar + main content area
+// Mobile: hidden sidebar + hamburger menu button
+//         sidebar slides in as an overlay when opened
 //
-// Sidebar contains:
-// - Brand logo
-// - Business name
-// - Navigation links
-// - Subscription usage bar
-// - User info + sign out
+// All dashboard pages render inside this component so
+// responsive behavior is handled in one place.
 
 import { useState, useEffect } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { colors, shadows, typography, spacing } from '../theme'
-import { clearAuth, getBusiness, getUser } from '../auth'
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { colors, shadows, typography, spacing, radius } from '../theme'
+import { clearAuth, getBusiness, getUser, getToken } from '../auth'
 import api from '../api'
+import useWindowSize from '../hooks/useWindowSize'
 
 const NAV_ITEMS = [
   { path: '/dashboard', label: 'Dashboard', icon: '⊞', end: true },
   { path: '/orders', label: 'Orders', icon: '📦', end: false },
   { path: '/orders/new', label: 'New Order', icon: '+', end: true },
   { path: '/riders', label: 'Riders', icon: '🏍', end: true },
-  { path: '/reports', label: 'Reports', icon: '📊', end: true }, 
+  { path: '/reports', label: 'Reports', icon: '📊', end: true },
   { path: '/feedback', label: 'Feedback', icon: '⭐', end: true },
   { path: '/settings', label: 'Settings', icon: '⚙️', end: true },
 ]
 
 export default function DashboardLayout({ children }) {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { isMobile } = useWindowSize()
   const business = getBusiness()
   const user = getUser()
   const [subscription, setSubscription] = useState(null)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  // Close sidebar when navigating on mobile
+  useEffect(() => {
+    setSidebarOpen(false)
+  }, [location.pathname])
+
+  // Close sidebar when resizing to desktop
+  useEffect(() => {
+    if (!isMobile) setSidebarOpen(false)
+  }, [isMobile])
 
   useEffect(() => {
     api.get('/subscription')
@@ -54,110 +64,170 @@ export default function DashboardLayout({ children }) {
     ? colors.warning
     : colors.success
 
+  const showSidebar = !isMobile || sidebarOpen
+
   return (
     <div style={styles.container}>
 
-      {/* ── Sidebar ─────────────────────────────────────────────────── */}
-      <aside style={styles.sidebar}>
+      {/* ── Mobile overlay backdrop ──────────────────────────────── */}
+      {isMobile && sidebarOpen && (
+        <div
+          style={styles.backdrop}
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-        {/* Brand */}
-        <div style={styles.brand}>
-          <Link to="/dashboard" style={styles.brandLink}>
-            <span style={styles.brandIcon}>🚚</span>
-            <span style={styles.brandName}>mydrop</span>
-          </Link>
-        </div>
+      {/* ── Sidebar ─────────────────────────────────────────────── */}
+      {showSidebar && (
+        <aside style={{
+          ...styles.sidebar,
+          // On mobile: slide in as overlay
+          position: isMobile ? 'fixed' : 'fixed',
+          transform: isMobile && !sidebarOpen
+            ? 'translateX(-100%)'
+            : 'translateX(0)',
+          transition: 'transform 0.25s ease',
+          zIndex: isMobile ? 200 : 100,
+        }}>
 
-        {/* Business name */}
-        <div style={styles.businessName}>
-          {business?.name || 'My Business'}
-        </div>
-
-        {/* Navigation */}
-        <nav style={styles.nav}>
-          {NAV_ITEMS.map(item => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.end}
-              style={({ isActive }) => ({
-                ...styles.navItem,
-                background: isActive
-                  ? colors.primary
-                  : 'transparent',
-                color: isActive
-                  ? 'white'
-                  : colors.navyTextMuted,
-              })}
-            >
-              <span style={styles.navIcon}>{item.icon}</span>
-              <span style={styles.navLabel}>{item.label}</span>
-            </NavLink>
-          ))}
-        </nav>
-
-        {/* Spacer */}
-        <div style={{ flex: 1 }} />
-
-        {/* Subscription usage */}
-        {subscription?.usage?.monthly_order_limit && (
-          <div style={styles.usageSection}>
-            <div style={styles.usageHeader}>
-              <span style={styles.usageLabel}>Monthly orders</span>
-              <span style={styles.usageCount}>
-                {subscription.usage.monthly_orders} /
-                {subscription.usage.monthly_order_limit}
-              </span>
-            </div>
-            <div style={styles.usageBar}>
-              <div style={{
-                ...styles.usageFill,
-                width: `${usagePercent}%`,
-                background: usageColor,
-              }} />
-            </div>
-            <div style={styles.usageTier}>
-              {subscription.subscription.effective_tier} plan
-            </div>
-            {subscription.usage.is_near_limit && (
-              <Link to="/pricing" style={styles.upgradeLink}>
-                Upgrade plan →
-              </Link>
+          {/* Brand */}
+          <div style={styles.brand}>
+            <Link to="/dashboard" style={styles.brandLink}>
+              <span style={styles.brandIcon}>🚚</span>
+              <span style={styles.brandName}>mydrop</span>
+            </Link>
+            {/* Close button on mobile */}
+            {isMobile && (
+              <button
+                onClick={() => setSidebarOpen(false)}
+                style={styles.sidebarClose}
+              >
+                ✕
+              </button>
             )}
           </div>
-        )}
 
-        {/* Trial banner */}
-        {subscription?.subscription?.status === 'TRIAL' &&
-         subscription?.subscription?.days_remaining <= 4 && (
-          <div style={styles.trialBanner}>
-            ⚠️ Trial ends in{' '}
-            <strong>{subscription.subscription.days_remaining} days</strong>
-            <Link to="/pricing" style={styles.trialLink}>Upgrade →</Link>
+          {/* Business name */}
+          <div style={styles.businessName}>
+            {business?.name || 'My Business'}
+          </div>
+
+          {/* Navigation */}
+          <nav style={styles.nav}>
+            {NAV_ITEMS.map(item => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.end}
+                style={({ isActive }) => ({
+                  ...styles.navItem,
+                  background: isActive
+                    ? colors.primary
+                    : 'transparent',
+                  color: isActive
+                    ? 'white'
+                    : colors.navyTextMuted,
+                })}
+              >
+                <span style={styles.navIcon}>{item.icon}</span>
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </nav>
+
+          <div style={{ flex: 1 }} />
+
+          {/* Usage bar */}
+          {subscription?.usage?.monthly_order_limit && (
+            <div style={styles.usageSection}>
+              <div style={styles.usageHeader}>
+                <span style={styles.usageLabel}>Monthly orders</span>
+                <span style={styles.usageCount}>
+                  {subscription.usage.monthly_orders} /
+                  {subscription.usage.monthly_order_limit}
+                </span>
+              </div>
+              <div style={styles.usageBar}>
+                <div style={{
+                  ...styles.usageFill,
+                  width: `${usagePercent}%`,
+                  background: usageColor,
+                }} />
+              </div>
+              <div style={styles.usageTier}>
+                {subscription.subscription.effective_tier} plan
+              </div>
+              {subscription.usage.is_near_limit && (
+                <Link to="/pricing" style={styles.upgradeLink}>
+                  Upgrade plan →
+                </Link>
+              )}
+            </div>
+          )}
+
+          {/* Trial banner */}
+          {subscription?.subscription?.status === 'TRIAL' &&
+           subscription?.subscription?.days_remaining <= 4 && (
+            <div style={styles.trialBanner}>
+              ⚠️ Trial ends in{' '}
+              <strong>
+                {subscription.subscription.days_remaining} days
+              </strong>
+              <Link to="/pricing" style={styles.trialLink}>
+                Upgrade →
+              </Link>
+            </div>
+          )}
+
+          {/* User section */}
+          <div style={styles.userSection}>
+            <div style={styles.userAvatar}>
+              {user?.name?.charAt(0)?.toUpperCase() || 'M'}
+            </div>
+            <div style={styles.userInfo}>
+              <div style={styles.userName}>{user?.name}</div>
+              <div style={styles.userRole}>Manager</div>
+            </div>
+            <button
+              onClick={handleSignOut}
+              style={styles.signOutBtn}
+              title="Sign out"
+            >
+              ⎋
+            </button>
+          </div>
+
+        </aside>
+      )}
+
+      {/* ── Main content ─────────────────────────────────────────── */}
+      <main style={{
+        ...styles.main,
+        marginLeft: isMobile ? 0 : 240,
+      }}>
+
+        {/* Mobile top bar */}
+        {isMobile && (
+          <div style={styles.mobileTopBar}>
+            <button
+              onClick={() => setSidebarOpen(true)}
+              style={styles.hamburger}
+            >
+              ☰
+            </button>
+            <Link to="/dashboard" style={styles.mobileLogo}>
+              🚚 mydrop
+            </Link>
+            <div style={styles.mobileTopBarRight}>
+              <div style={styles.mobileAvatar}>
+                {user?.name?.charAt(0)?.toUpperCase() || 'M'}
+              </div>
+            </div>
           </div>
         )}
 
-        {/* User section */}
-        <div style={styles.userSection}>
-          <div style={styles.userAvatar}>
-            {user?.name?.charAt(0)?.toUpperCase() || 'M'}
-          </div>
-          <div style={styles.userInfo}>
-            <div style={styles.userName}>{user?.name}</div>
-            <div style={styles.userRole}>Manager</div>
-          </div>
-          <button onClick={handleSignOut} style={styles.signOutBtn}
-            title="Sign out"
-          >
-            ⎋
-          </button>
-        </div>
-
-      </aside>
-
-      {/* ── Main content ────────────────────────────────────────────── */}
-      <main style={styles.main}>
         {children}
+
       </main>
 
     </div>
@@ -170,38 +240,50 @@ const styles = {
     minHeight: '100vh',
     background: colors.background,
   },
-
-  // Sidebar
+  backdrop: {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(0,0,0,0.5)',
+    zIndex: 150,
+  },
   sidebar: {
     width: 240,
     background: colors.navy,
     display: 'flex',
     flexDirection: 'column',
-    position: 'fixed',
     top: 0,
     left: 0,
     bottom: 0,
-    zIndex: 100,
     overflowY: 'auto',
   },
   brand: {
-    padding: '24px 20px 8px',
+    padding: '20px 20px 8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   brandLink: {
     display: 'flex',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     textDecoration: 'none',
   },
-  brandIcon: { fontSize: 26 },
+  brandIcon: { fontSize: 24 },
   brandName: {
     fontSize: typography.xl,
     fontWeight: typography.bold,
     color: 'white',
-    letterSpacing: '-0.5px',
+  },
+  sidebarClose: {
+    background: 'none',
+    border: 'none',
+    color: colors.navyTextMuted,
+    fontSize: 18,
+    cursor: 'pointer',
+    padding: 4,
   },
   businessName: {
-    padding: '4px 20px 20px',
+    padding: '4px 20px 16px',
     fontSize: typography.sm,
     color: colors.navyTextMuted,
     borderBottom: `1px solid ${colors.navyBorder}`,
@@ -210,8 +292,6 @@ const styles = {
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
   },
-
-  // Navigation
   nav: {
     display: 'flex',
     flexDirection: 'column',
@@ -229,10 +309,11 @@ const styles = {
     fontWeight: typography.medium,
     transition: 'all 0.15s ease',
   },
-  navIcon: { fontSize: 16, width: 20, textAlign: 'center' },
-  navLabel: {},
-
-  // Usage
+  navIcon: {
+    fontSize: 16,
+    width: 20,
+    textAlign: 'center',
+  },
   usageSection: {
     margin: '0 12px',
     padding: '14px 12px',
@@ -279,8 +360,6 @@ const styles = {
     textDecoration: 'none',
     fontWeight: typography.semibold,
   },
-
-  // Trial banner
   trialBanner: {
     margin: '0 12px 8px',
     padding: '10px 12px',
@@ -298,8 +377,6 @@ const styles = {
     fontWeight: typography.semibold,
     fontSize: typography.xs,
   },
-
-  // User section
   userSection: {
     display: 'flex',
     alignItems: 'center',
@@ -343,12 +420,51 @@ const styles = {
     padding: 4,
     flexShrink: 0,
   },
-
-  // Main
   main: {
-    marginLeft: 240,
     flex: 1,
     minHeight: '100vh',
     background: colors.background,
+    transition: 'margin-left 0.25s ease',
+  },
+
+  // Mobile top bar
+  mobileTopBar: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '12px 16px',
+    background: colors.navy,
+    position: 'sticky',
+    top: 0,
+    zIndex: 50,
+    boxShadow: shadows.md,
+  },
+  hamburger: {
+    background: 'none',
+    border: 'none',
+    color: 'white',
+    fontSize: 24,
+    cursor: 'pointer',
+    padding: 4,
+    lineHeight: 1,
+  },
+  mobileLogo: {
+    fontSize: typography.lg,
+    fontWeight: typography.bold,
+    color: 'white',
+    textDecoration: 'none',
+  },
+  mobileTopBarRight: {},
+  mobileAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: '50%',
+    background: colors.primary,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    fontWeight: typography.bold,
+    fontSize: typography.sm,
   },
 }
