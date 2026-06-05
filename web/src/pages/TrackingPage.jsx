@@ -7,7 +7,7 @@
 // Updated with orange/navy theme and neutral icons (no food emojis).
 // Status labels are dynamic based on business type from the API.
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import axios from 'axios'
 import { onSnapshot, doc } from 'firebase/firestore'
