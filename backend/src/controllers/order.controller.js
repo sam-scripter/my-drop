@@ -504,6 +504,7 @@ async function trackOrder(req, res, next) {
     const statusLabels = getStatusLabels(order.business.business_type || 'OTHER');
 
     res.json({
+      order_id: order.id,
       business: {
         name: order.business.name,
         logo_url: order.business.logo_url,
