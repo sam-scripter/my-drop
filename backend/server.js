@@ -43,6 +43,8 @@ app.use('/api/contact', require('./src/routes/contact.routes'));
 
 app.use('/api/reports', require('./src/routes/reports.routes'))
 
+app.use('/api/feedback', require('./src/routes/feedback.routes'));
+
 // ── Rate limiting ───────────────────────────────────────────────────────
 // Limits how many requests one IP can make — prevents abuse
 

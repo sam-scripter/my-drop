@@ -22,6 +22,7 @@ const NAV_ITEMS = [
   { path: '/orders/new', label: 'New Order', icon: '+', end: true },
   { path: '/riders', label: 'Riders', icon: '🏍', end: true },
   { path: '/reports', label: 'Reports', icon: '📊', end: true }, 
+  { path: '/feedback', label: 'Feedback', icon: '⭐', end: true },
 ]
 
 export default function DashboardLayout({ children }) {
