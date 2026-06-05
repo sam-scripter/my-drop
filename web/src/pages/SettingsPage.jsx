@@ -15,7 +15,7 @@ import api from '../api'
 import {
   colors, shadows, radius, typography, spacing
 } from '../theme'
-import { getUser, getBusiness, saveAuth, getToken } from '../auth'
+import { getUser, getBusiness, setAuth as saveAuth, getToken } from '../auth'
 
 export default function SettingsPage() {
   const user = getUser()
