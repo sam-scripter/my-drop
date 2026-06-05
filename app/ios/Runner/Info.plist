@@ -2,6 +2,24 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- Location permissions — required for GPS tracking -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>mydrop needs your location to track your delivery in real time.</string>
+
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>mydrop needs background location access to stream your position during active deliveries.</string>
+
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>mydrop needs background location access to stream your position during active deliveries.</string>
+
+	<!-- Camera — for proof of delivery photos (future feature) -->
+	<key>NSCameraUsageDescription</key>
+	<string>mydrop needs camera access for delivery confirmation photos.</string>
+
+	<!-- Google Maps -->
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
+	
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
