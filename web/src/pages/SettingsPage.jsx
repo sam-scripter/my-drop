@@ -152,7 +152,13 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout>
-      <div style={styles.page}>
+      <div className="settings-page" style={styles.page}>
+        <style>{`
+          @media (max-width: 768px) {
+            .settings-page { padding: 16px !important; }
+            .settings-row { flex-direction: column !important; }
+          }
+        `}</style>
 
         {/* ── Header ──────────────────────────────────────────────── */}
         <div style={styles.pageHeader}>
@@ -181,7 +187,7 @@ export default function SettingsPage() {
                 <StatusMessage msg={profileMsg} />
               )}
 
-              <div style={styles.row}>
+              <div className="settings-row" style={styles.row}>
                 <div style={styles.field}>
                   <label style={styles.label}>Full name</label>
                   <input
@@ -264,7 +270,7 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div style={styles.row}>
+              <div className="settings-row" style={styles.row}>
                 <div style={styles.field}>
                   <label style={styles.label}>Business phone</label>
                   <input
@@ -351,7 +357,7 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div style={styles.row}>
+              <div className="settings-row" style={styles.row}>
                 <div style={styles.field}>
                   <label style={styles.label}>New password</label>
                   <input

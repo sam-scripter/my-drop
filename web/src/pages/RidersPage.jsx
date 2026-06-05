@@ -69,10 +69,20 @@ export default function RidersPage() {
 
   return (
     <DashboardLayout>
-      <div style={styles.page}>
+      <div className="riders-page" style={styles.page}>
+        <style>{`
+          @media (max-width: 768px) {
+            .riders-page { padding: 16px !important; }
+            .riders-header { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+            .riders-summary { flex-wrap: wrap !important; }
+          }
+          @media (max-width: 480px) {
+            .riders-modal { width: calc(100vw - 32px) !important; max-height: 90vh; overflow-y: auto; }
+          }
+        `}</style>
 
         {/* ── Header ──────────────────────────────────────────────── */}
-        <div style={styles.pageHeader}>
+        <div className="riders-header" style={styles.pageHeader}>
           <div>
             <h1 style={styles.pageTitle}>Riders</h1>
             <p style={styles.pageSubtitle}>
@@ -88,7 +98,7 @@ export default function RidersPage() {
         </div>
 
         {/* ── Summary row ─────────────────────────────────────────── */}
-        <div style={styles.summaryRow}>
+        <div className="riders-summary" style={styles.summaryRow}>
           {[
             { label: 'Total Riders', value: riders.length, color: colors.text },
             { label: 'Active', value: activeCount, color: colors.success },
@@ -135,7 +145,7 @@ export default function RidersPage() {
         {/* ── Add rider modal ──────────────────────────────────────── */}
         {showAddModal && (
           <div style={styles.modalOverlay}>
-            <div style={styles.modal}>
+            <div className="riders-modal" style={styles.modal}>
               <div style={styles.modalHeader}>
                 <h3 style={styles.modalTitle}>Add New Rider</h3>
                 <button

@@ -68,10 +68,21 @@ export default function OrdersPage() {
 
   return (
     <DashboardLayout>
-      <div style={styles.page}>
+      <div className="orders-page" style={styles.page}>
+        <style>{`
+          @media (max-width: 768px) {
+            .orders-page { padding: 16px !important; }
+            .orders-header { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+            .orders-table-card { overflow-x: auto !important; }
+            .orders-table-card > * { min-width: 620px; }
+          }
+          @media (max-width: 480px) {
+            .orders-modal { width: calc(100vw - 32px) !important; max-height: 90vh; overflow-y: auto; }
+          }
+        `}</style>
 
         {/* ── Header ──────────────────────────────────────────────── */}
-        <div style={styles.pageHeader}>
+        <div className="orders-header" style={styles.pageHeader}>
           <div>
             <h1 style={styles.pageTitle}>Orders</h1>
             <p style={styles.pageSubtitle}>
@@ -108,7 +119,7 @@ export default function OrdersPage() {
         </div>
 
         {/* ── Table ───────────────────────────────────────────────── */}
-        <div style={styles.tableCard}>
+        <div className="orders-table-card" style={styles.tableCard}>
           <div style={styles.tableHeader}>
             <span>Customer</span>
             <span>Address</span>
@@ -183,7 +194,7 @@ export default function OrdersPage() {
         {/* ── Assign rider modal ───────────────────────────────────── */}
         {assignOrderId && (
           <div style={styles.modalOverlay}>
-            <div style={styles.modal}>
+            <div className="orders-modal" style={styles.modal}>
               <h3 style={styles.modalTitle}>Assign Rider</h3>
 
               {riders.length === 0 ? (

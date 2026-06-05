@@ -111,7 +111,13 @@ export default function CreateOrderPage() {
   // ── Form state ───────────────────────────────────────────────────────
   return (
     <DashboardLayout>
-      <div style={styles.page}>
+      <div className="create-page" style={styles.page}>
+        <style>{`
+          @media (max-width: 768px) {
+            .create-page { padding: 16px !important; }
+            .form-row { flex-direction: column !important; }
+          }
+        `}</style>
         <div style={styles.pageHeader}>
           <h1 style={styles.pageTitle}>New Order</h1>
           <p style={styles.pageSubtitle}>
@@ -126,7 +132,7 @@ export default function CreateOrderPage() {
 
             <div style={styles.sectionLabel}>Customer details</div>
 
-            <div style={styles.row}>
+            <div className="form-row" style={styles.row}>
               <div style={styles.field}>
                 <label style={styles.label}>Customer name *</label>
                 <input
@@ -190,7 +196,7 @@ export default function CreateOrderPage() {
 
             <div style={styles.sectionLabel}>Payment details (optional)</div>
 
-            <div style={styles.row}>
+            <div className="form-row" style={styles.row}>
               <div style={styles.field}>
                 <label style={styles.label}>Order value (KES)</label>
                 <input
