@@ -214,4 +214,42 @@ async function toggleRiderStatus(req, res, next) {
   }
 }
 
-module.exports = { createRider, getRiders, updateFcmToken, toggleRiderStatus, changePassword };
+/**
+ * PUT /api/users/me
+ * Allows the logged-in manager to update their own
+ * name and phone number. Email cannot be changed.
+ */
+async function updateProfile(req, res, next) {
+  try {
+    const { name, phone } = req.body;
+
+    if (!name || name.trim().length < 2) {
+      return res.status(400).json({
+        error: true,
+        message: 'Name must be at least 2 characters',
+        code: 'INVALID_NAME'
+      });
+    }
+
+    const user = await prisma.user.update({
+      where: { id: req.user.userId },
+      data: {
+        name: name.trim(),
+        phone: phone?.trim() || undefined,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+      }
+    });
+
+    res.json({ message: 'Profile updated successfully', user });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { createRider, getRiders, updateFcmToken, toggleRiderStatus, changePassword, updateProfile };

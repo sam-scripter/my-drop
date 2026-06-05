@@ -23,6 +23,7 @@ const NAV_ITEMS = [
   { path: '/riders', label: 'Riders', icon: '🏍', end: true },
   { path: '/reports', label: 'Reports', icon: '📊', end: true }, 
   { path: '/feedback', label: 'Feedback', icon: '⭐', end: true },
+  { path: '/settings', label: 'Settings', icon: '⚙️', end: true },
 ]
 
 export default function DashboardLayout({ children }) {

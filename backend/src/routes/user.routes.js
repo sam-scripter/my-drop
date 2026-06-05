@@ -7,6 +7,7 @@ const {
   updateFcmToken,
   toggleRiderStatus,
   changePassword,
+  updateProfile,
 } = require('../controllers/user.controller');
 const { authenticateJWT, requireRole } = require('../middleware/auth');
 const { validate, schemas } = require('../middleware/validate');
@@ -28,5 +29,8 @@ router.put('/riders/:id/toggle', requireRole('MANAGER'), toggleRiderStatus);
 
 // PUT /api/users/change-password — logged in user changes their own password
 router.put('/change-password', validate(schemas.changePassword), changePassword);
+
+// PUT /api/users/me — update own profile
+router.put('/me', updateProfile);
 
 module.exports = router;
